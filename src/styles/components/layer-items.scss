@@ -1,0 +1,30 @@
+@import "../variables";
+@import "../shared/buttons";
+
+$bar-height: 60px;
+$button-height: $bar-height - $spacing * 4;
+
+[data-reactroot] {
+  display: block;
+  height: 100%;
+  width: 100%;
+
+  .item {
+    position: absolute;
+    top: 0;
+    margin-left: -1px;
+    width: 1px;
+    height: calc(100% - 2px);
+    background-color: #444;
+    border: 1px solid #666;
+    cursor: pointer;
+
+    &:hover {
+      background-color: #666;
+    }
+
+    &.selected {
+      background-color: #999;
+    }
+  }
+}
