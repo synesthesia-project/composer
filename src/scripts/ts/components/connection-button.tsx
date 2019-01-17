@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as constants from '@synesthesia-project/core/constants';
-import {ControllerEndpoint} from '@synesthesia-project/core/protocol';
+import {ControllerEndpoint} from '@synesthesia-project/core/protocols/broadcast';
 
 import * as file from '@synesthesia-project/core/file';
 import * as func from '../data/functional';

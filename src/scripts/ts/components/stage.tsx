@@ -13,7 +13,7 @@ import {EventProperties} from './item-properties';
 import {LayerOptionsPopup} from './popups/layer-options-popup';
 
 import * as file from '@synesthesia-project/core/file';
-import * as protocol from '@synesthesia-project/core/protocol';
+import * as protocol from '@synesthesia-project/core/protocols/broadcast';
 import * as selection from '../data/selection';
 import * as stageState from '../data/stage-state';
 import * as fileManipulation from '../data/file-manipulation';
