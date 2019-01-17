@@ -11,6 +11,7 @@ var webpack = require('webpack');
 
 var tsProject = ts.createProject('src/scripts/ts/tsconfig.json');
 var extensionTsProject = ts.createProject('src/extension/ts/tsconfig.json');
+var integrationTsProject = ts.createProject('src/integration/tsconfig.json');
 
 // Utility Functions
 
@@ -45,13 +46,21 @@ gulp.task('ts', function () {
 });
 
 gulp.task('extension-ts', function () {
-    return extensionTsProject.src()
-      .pipe(sourcemaps.init())
-      .pipe(extensionTsProject())
-      .pipe(sourcemaps.write({
-        sourceRoot: '/src/extension/ts'
-      }))
-      .pipe(gulp.dest('dist/extension'));
+  return extensionTsProject.src()
+    .pipe(sourcemaps.init())
+    .pipe(extensionTsProject())
+    .pipe(sourcemaps.write({
+      sourceRoot: '/src/extension/ts'
+    }))
+    .pipe(gulp.dest('dist/extension'));
+});
+
+gulp.task('integration-ts', function () {
+  return integrationTsProject.src()
+    .pipe(sourcemaps.init())
+    .pipe(integrationTsProject())
+    .pipe(sourcemaps.write())
+    .pipe(gulp.dest('dist/integration'));
 });
 
 gulp.task('tslint', function() {
@@ -97,7 +106,7 @@ gulp.task('css', function () {
   return gulp.src('./src/styles/**/*.css').pipe(gulp.dest('dist/styles'));
 });
 
-gulp.task("dist", ['webpack', 'css', 'extension-ts'], function(){
+gulp.task("dist", ['webpack', 'css', 'extension-ts', 'integration-ts'], function(){
   var copyCoreFiles = gulp.src([
       './src/manifest.json',
       './src/index.html',

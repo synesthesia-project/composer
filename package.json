@@ -2,6 +2,8 @@
   "name": "@synesthesia-project/composer",
   "version": "0.0.1",
   "description": "composition tool for synesthesia",
+  "main": "dist/integration/index.js",
+  "types": "dist/integration/index.d.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/samlanning/core.git"
