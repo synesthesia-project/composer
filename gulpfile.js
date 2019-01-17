@@ -76,23 +76,14 @@ gulp.task("webpack", ['bower', 'ts', 'copy-js'], function(callback) {
             path: __dirname + "/dist"
         },
 
-        // Enable sourcemaps for debugging webpack's output.
-        devtool: "source-map",
+        // // Enable sourcemaps for debugging webpack's output.
+        // devtool: "source-map",
 
-        module: {
-            preLoaders: [
-                { test: /\.js$/, loader: "source-map" }
-            ]
-        },
-
-        // When importing a module whose path matches one of the following, just
-        // assume a corresponding global variable exists and use that instead.
-        // This is important because it allows us to avoid bundling all of our
-        // dependencies, which allows browsers to cache those libraries between builds.
-        externals: {
-            "react": "React",
-            "react-dom": "ReactDOM"
-        },
+        // module: {
+        //     preLoaders: [
+        //         { test: /\.js$/, loader: "source-map" }
+        //     ]
+        // },
     }, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err);
         // gutil.log("[webpack]", stats.toString({
@@ -115,9 +106,8 @@ gulp.task("dist", ['webpack', 'css', 'extension-ts'], function(){
     .pipe(gulp.dest('dist'));
 
   var copyLibs = gulp.src([
-      './bower_components/jquery/dist/jquery.min.js',
-      './bower_components/react/react.js',
-      './bower_components/react/react-dom.js'])
+      './bower_components/jquery/dist/jquery.min.js'
+    ])
     .pipe(gulp.dest('dist/lib'));
 
   return all(copyCoreFiles, copyLibs);
