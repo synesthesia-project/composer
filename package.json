@@ -1,5 +1,5 @@
 {
-  "name": "synesthesia-composer",
+  "name": "@synesthesia-project/composer",
   "version": "0.0.1",
   "description": "composition tool for synesthesia",
   "repository": {
