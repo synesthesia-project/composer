@@ -1,16 +1,20 @@
 import * as React from 'react';
 import {styled, buttonDisabled, rectButton, buttonPressed} from './styling';
 
+import * as file from '@synesthesia-project/core/file';
+import { validateFile } from '@synesthesia-project/core/file/file-validation';
+
+import { IntegrationSettings } from '../../../integration/shared';
+
 import * as spotifyAuth from '../auth/spotify';
 import {SpotifySdk, spotifyWebPlaybackSDKReady} from '../external/spotify-sdk';
-import * as file from '@synesthesia-project/core/file';
-import {validateFile} from '@synesthesia-project/core/file/file-validation';
 import * as func from '../data/functional';
 import * as storage from '../util/storage';
 import {PlayState} from '../data/play-state';
 import {Source} from '../sources/source';
 import {CompanionSource} from '../sources/companion-source';
 import {FileSource} from '../sources/file-source';
+import { IntegrationSource } from '../sources/integration-source';
 import {SpotifySource} from '../sources/spotify-source';
 import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
@@ -19,7 +23,12 @@ import Save = require('react-icons/lib/md/save');
 import FolderOpen = require('react-icons/lib/md/folder-open');
 import Tab = require('react-icons/lib/md/tab');
 
-import {ConnectionButton} from './connection-button';
+import { ConnectionButton } from './connection-button';
+import { IntegrationButton } from './integration-button';
+
+interface Window {
+  integrationSettings?: IntegrationSettings;
+}
 
 export interface FileSourceProps {
   className?: string;
@@ -31,6 +40,7 @@ export interface FileSourceProps {
 }
 
 interface FileSourceState {
+  integration: IntegrationSource | null;
   source: Source | null;
   companionAllowed: boolean;
   spotifyWebPlaybackSDK: SpotifySdk | null;
@@ -40,8 +50,18 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
 
   constructor(props: FileSourceProps) {
     super(props);
+
+    let integration: IntegrationSource | null = null;
+    const w = window as Window;
+    if (w.integrationSettings) {
+      integration = new IntegrationSource(w.integrationSettings);
+    }
+
+    console.log('integrationSettings', w.integrationSettings);
+
     this.state = {
-      source: null,
+      integration,
+      source: integration, // only matters if non-null
       companionAllowed: true,
       spotifyWebPlaybackSDK: null
     };
@@ -86,36 +106,44 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
 
   public render() {
     const source = this.state.source ? this.state.source.sourceKind() : 'none';
-    return (
-      <div className={this.props.className}>
-        <input id="file_picker" type="file" onChange={this.loadAudioFile} />
-        <label htmlFor="file_picker"><FolderOpen/> Open Audio File</label>
-        <button className={
-            'connectToCompanion' +
-            (source === 'companion' ? ' pressed' : '') +
-            (this.state.companionAllowed ? '' : ' disabled')} onClick={this.toggleCompanion}>
-          <Tab/> Connect To Tabs
-        </button>
-        <button className={source === 'spotify' ? ' pressed' : ''} onClick={this.toggleSpotify}>
-          <SpotifyIcon /> Connect To Remote
-        </button>
-        <button
-          className={
-            (source === 'spotify-local' ? ' pressed' : '') +
-            (this.state.spotifyWebPlaybackSDK !== null ? '' : ' disabled')}
-          onClick={this.toggleSpotifyLocal}
-          title={
-            this.state.spotifyWebPlaybackSDK === null ?
-            'Spotify Local Play is not possible when Synesthesia is run as an extension' : undefined}>
-          <SpotifyIcon /> Play Locally
-        </button>
-        <span className="description">{this.getTrackDescription()}</span>
-        <span className="grow"/>
-        <ConnectionButton file={this.props.file} playState={this.props.playState} />
-        <button onClick={this.openFile} title="Open"><FolderOpen/></button>
-        <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><Save/></button>
-      </div>
-    );
+    if (this.state.integration) {
+      return (
+        <div className={this.props.className}>
+          <IntegrationButton integration={this.state.integration} settings={this.state.integration.getSettings()} />
+        </div>
+      );
+    } else {
+      return (
+        <div className={this.props.className}>
+          <input id="file_picker" type="file" onChange={this.loadAudioFile} />
+          <label htmlFor="file_picker"><FolderOpen/> Open Audio File</label>
+          <button className={
+              'connectToCompanion' +
+              (source === 'companion' ? ' pressed' : '') +
+              (this.state.companionAllowed ? '' : ' disabled')} onClick={this.toggleCompanion}>
+            <Tab/> Connect To Tabs
+          </button>
+          <button className={source === 'spotify' ? ' pressed' : ''} onClick={this.toggleSpotify}>
+            <SpotifyIcon /> Connect To Remote
+          </button>
+          <button
+            className={
+              (source === 'spotify-local' ? ' pressed' : '') +
+              (this.state.spotifyWebPlaybackSDK !== null ? '' : ' disabled')}
+            onClick={this.toggleSpotifyLocal}
+            title={
+              this.state.spotifyWebPlaybackSDK === null ?
+              'Spotify Local Play is not possible when Synesthesia is run as an extension' : undefined}>
+            <SpotifyIcon /> Play Locally
+          </button>
+          <span className="description">{this.getTrackDescription()}</span>
+          <span className="grow"/>
+          <ConnectionButton file={this.props.file} playState={this.props.playState} />
+          <button onClick={this.openFile} title="Open"><FolderOpen/></button>
+          <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><Save/></button>
+        </div>
+      );
+    }
   }
 
   private getTrackDescription() {
