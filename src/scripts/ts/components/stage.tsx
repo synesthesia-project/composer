@@ -67,8 +67,6 @@ export class Stage extends React.Component<StageProps, StageState> {
     this.requestBindingForLayer = this.requestBindingForLayer.bind(this);
     this.openLayerOptions = this.openLayerOptions.bind(this);
     this.closeLayerOptions = this.closeLayerOptions.bind(this);
-
-    protocol.messages.test();
   }
 
   public componentDidMount() {

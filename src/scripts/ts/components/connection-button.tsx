@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as constants from '@synesthesia-project/core/constants';
-import {ControllerEndpoint} from '@synesthesia-project/core/protocols/broadcast';
+import {UpstreamEndpoint} from '@synesthesia-project/core/protocols/broadcast';
 
 import * as file from '@synesthesia-project/core/file';
 import * as func from '../data/functional';
@@ -33,7 +33,7 @@ const DEFAULT_HOST = 'localhost:' + constants.DEFAULT_SYNESTHESIA_PORT;
 class ConnectionButton extends React.Component<ConnectionButtonProps, ConnectionButtonState> {
 
   private socket: WebSocket | null = null;
-  private endpoint: ControllerEndpoint | null = null;
+  private endpoint: UpstreamEndpoint | null = null;
   private lastSentState: PlayStateData | null = null;
 
   public constructor(props: ConnectionButtonProps) {
@@ -81,7 +81,7 @@ class ConnectionButton extends React.Component<ConnectionButtonProps, Connection
         this.socket.onopen = () => {
           if (socket !== this.socket) return;
           this.setState({state: 'connected'});
-          const endpoint = this.endpoint = new ControllerEndpoint(
+          const endpoint = this.endpoint = new UpstreamEndpoint(
             msg => {
               if (socket !== this.socket) throw new Error('socket not open');
               socket.send(JSON.stringify(msg));
