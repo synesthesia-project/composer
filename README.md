@@ -1,5 +1,10 @@
 # Synesthesia Composer
 
+
+[![Total Alerts](https://img.shields.io/lgtm/alerts/g/synesthesia-project/composer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/synesthesia-project/composer/alerts/)
+[![Language Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/synesthesia-project/composer.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/synesthesia-project/composer/context:javascript)
+[![Build Status](https://dev.azure.com/synesthesia--project/synesthesia/_apis/build/status/composer?branchName=master)](https://dev.azure.com/synesthesia--project/synesthesia/_build/latest?definitionId=4?branchName=master)
+
 This is the composer part of the synesthesia project.
 
 ## Building / Usage
@@ -9,8 +14,8 @@ html files output in `dist/` can also be used directly).
 
 To Build:
 
-* Run `npm install && gulp` if you have `gulp` installed globally
-* Or run `npm install && ./node_modules/gulp/bin/gulp.js`
+* Run `yarn install && gulp` if you have `gulp` installed globally
+* Or run `yarn install && ./node_modules/gulp/bin/gulp.js`
 
 This output of the build is put in `dist/`, and you can either open
 `dist/index.html` directly in your browser, or install the `dist/` directory as
@@ -19,7 +24,7 @@ google play music).
 
 ## TODO list
 
-Please see the [GitHub issues](https://github.com/samlanning/synesthesia/issues) for the list of
+Please see the [GitHub issues](https://github.com/synesthesia-project/synesthesia/issues) for the list of
 tasks.
 
 ## Special Thanks
