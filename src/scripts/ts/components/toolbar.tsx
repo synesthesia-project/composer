@@ -12,7 +12,6 @@ import * as func from '../data/functional';
 import * as storage from '../util/storage';
 import {PlayState} from '../data/play-state';
 import {Source} from '../sources/source';
-import {CompanionSource} from '../sources/companion-source';
 import {FileSource} from '../sources/file-source';
 import { IntegrationSource } from '../sources/integration-source';
 import {SpotifySource} from '../sources/spotify-source';
@@ -68,7 +67,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
 
     // Bind callbacks & event listeners
     this.loadAudioFile = this.loadAudioFile.bind(this);
-    this.toggleCompanion = this.toggleCompanion.bind(this);
     this.toggleSpotify = this.toggleSpotify.bind(this);
     this.toggleSpotifyLocal = this.toggleSpotifyLocal.bind(this);
     this.saveFile = this.saveFile.bind(this);
@@ -76,8 +74,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   public componentDidMount() {
-    // Automatically connect to extension when starting
-    this.toggleCompanion();
     // Check if Spotify SDK is ready and enables
     spotifyWebPlaybackSDKReady.then(spotifyWebPlaybackSDK => this.setState({spotifyWebPlaybackSDK}));
   }
@@ -117,12 +113,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
         <div className={this.props.className}>
           <input id="file_picker" type="file" onChange={this.loadAudioFile} />
           <label htmlFor="file_picker"><FolderOpen/> Open Audio File</label>
-          <button className={
-              'connectToCompanion' +
-              (source === 'companion' ? ' pressed' : '') +
-              (this.state.companionAllowed ? '' : ' disabled')} onClick={this.toggleCompanion}>
-            <Tab/> Connect To Tabs
-          </button>
           <button className={source === 'spotify' ? ' pressed' : ''} onClick={this.toggleSpotify}>
             <SpotifyIcon /> Connect To Remote
           </button>
@@ -173,19 +163,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     const source = new FileSource(ev.target);
     this.setNewSource(source);
     ev.target.value = '';
-  }
-
-  private toggleCompanion() {
-    if (this.state.source && this.state.source.sourceKind() === 'companion') {
-      this.state.source.dispose();
-    } else {
-      try {
-        this.setNewSource(new CompanionSource());
-      } catch (e) {
-        console.warn(e);
-        this.setState({companionAllowed: false});
-      }
-    }
   }
 
   private toggleSpotify() {

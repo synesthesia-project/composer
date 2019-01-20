@@ -1,8 +1,3 @@
-/// <reference path="../../../node_modules/@types/jquery/index.d.ts"/>
-/// <reference path="../../../node_modules/@types/chrome/index.d.ts"/>
-/// <reference path="../../../node_modules/@types/webmidi/index.d.ts"/>
-/// <reference path="../../extension/ts/proto.d.ts"/>
-
 // Icons
 // TODO: Find a better way to do this
 
