@@ -1,8 +1,42 @@
-import {IntegrationSettings} from '../../../integration/shared';
-import { PlayStateControls } from '../data/play-state';
+import { Endpoint } from '@synesthesia-project/core/protocols/util/endpoint';
+
+import { IntegrationSettings, PlayStateData, Notification, IntegrationMessage }
+    from '../../../integration/shared';
+import { PlayStateControls, fromIntegrationData } from '../data/play-state';
 
 import { Source } from './source';
-import { timingSafeEqual } from 'crypto';
+
+export class ComposerEndpoint extends Endpoint<never, never, Notification> {
+
+    private readonly playStateUpdated: (state: PlayStateData) => void;
+
+    public constructor(
+        sendMessage: (msg: IntegrationMessage) => void,
+        playStateUpdated: (state: PlayStateData) => void) {
+        super(sendMessage);
+        this.playStateUpdated = playStateUpdated;
+    }
+
+    protected handleRequest(request: never): Promise<never> {
+        return new Promise((resolve, reject) => {
+            reject(new Error('unknown request type'));
+        });
+    }
+
+    protected handleNotification(notification: Notification) {
+        switch (notification.type) {
+            case 'state':
+                this.playStateUpdated(notification.data);
+                return;
+        }
+        console.error('unknown notification:', notification);
+    }
+
+    protected handleClosed() {
+        console.log('connection closed');
+    }
+
+}
 
 export type StateListener = (state: 'not_connected' | 'connecting' | 'connected' | 'error') => void;
 
@@ -12,7 +46,10 @@ export class IntegrationSource extends Source {
 
     private readonly listeners: StateListener[] = [];
 
-    private socket: WebSocket | null;
+    private connection: {
+        socket: WebSocket;
+        endpoint: ComposerEndpoint;
+    } | null = null;
 
     public constructor(settings: IntegrationSettings) {
         super();
@@ -29,20 +66,31 @@ export class IntegrationSource extends Source {
     };
 
     public connect() {
-        if (this.socket) this.socket.close();
-        const socket = this.socket = new WebSocket(this.settings.websocketURL);
+        if (this.connection) this.connection.socket.close();
+        const socket = new WebSocket(this.settings.websocketURL);
+        const endpoint = new ComposerEndpoint(
+            msg => socket.send(JSON.stringify(msg)),
+            playState => (this.playStateUpdated(fromIntegrationData(playState)))
+        )
+        const connection = this.connection = {socket, endpoint};
         for (const l of this.listeners) l('connecting');
-        this.socket.addEventListener('close', () => {
-            if (this.socket !== socket) return;
+        socket.addEventListener('message', msg => {
+            endpoint.recvMessage(JSON.parse(msg.data));
+        })
+        socket.addEventListener('close', () => {
+            if (this.connection !== connection) return;
             for (const l of this.listeners) l('not_connected');
-            this.socket = null;
+            endpoint.closed();
+            this.connection = null;
         });
-        this.socket.addEventListener('error', () => {
-            if (this.socket !== socket) return;
+        socket.addEventListener('error', () => {
+            if (this.connection !== connection) return;
             for (const l of this.listeners) l('error');
+            endpoint.closed();
+            this.connection = null;
         });
-        this.socket.addEventListener('open', () => {
-            if (this.socket !== socket) return;
+        socket.addEventListener('open', () => {
+            if (this.connection !== connection) return;
             for (const l of this.listeners) l('connected');
         });
     }
@@ -57,8 +105,8 @@ export class IntegrationSource extends Source {
     }
 
     public addListener(listener: StateListener) {
-        if (this.socket) {
-            switch(this.socket.readyState) {
+        if (this.connection) {
+            switch(this.connection.socket.readyState) {
                 case WebSocket.CONNECTING:
                     listener('connecting');
                     break;
@@ -75,7 +123,7 @@ export class IntegrationSource extends Source {
     }
 
     public disconnect(): void {
-        if (this.socket) this.socket.close();
+        if (this.connection) this.connection.socket.close();
     }
 }
 

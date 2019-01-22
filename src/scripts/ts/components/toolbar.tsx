@@ -60,7 +60,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
 
     this.state = {
       integration,
-      source: integration, // only matters if non-null
+      source: null,
       companionAllowed: true,
       spotifyWebPlaybackSDK: null
     };
@@ -76,6 +76,10 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   public componentDidMount() {
     // Check if Spotify SDK is ready and enables
     spotifyWebPlaybackSDKReady.then(spotifyWebPlaybackSDK => this.setState({spotifyWebPlaybackSDK}));
+    // Set source to integration if it's set
+    if (this.state.integration) {
+      this.setNewSource(this.state.integration);
+    }
   }
 
   public saveFile() {

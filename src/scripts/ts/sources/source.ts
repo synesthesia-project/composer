@@ -13,6 +13,7 @@ export abstract class Source {
   protected abstract disconnect(): void;
 
   protected playStateUpdated(state: Maybe<PlayStateDataOnly>) {
+    console.log('playStateUpdated', state);
     const unchanged = state.equals(this.lastState, playStateDataEquals);
     if (unchanged) return;
     this.lastState = state;
