@@ -24,7 +24,7 @@ export interface MediaPlaying {
 export interface PlayStateTrackMeta {
   info?: {
     title: string;
-    artist: string;
+    artist?: string;
   };
 }
 

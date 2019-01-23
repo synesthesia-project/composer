@@ -144,8 +144,11 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   private getTrackDescription() {
     return this.props.playState.caseOf({
       just: state =>
-        state.meta.info ?
-        `${state.meta.info.artist} - ${state.meta.info.title}` : 'Unknown Track'
+        state.meta.info ? (
+          state.meta.info.artist ?
+          `${state.meta.info.artist} - ${state.meta.info.title}` :
+          state.meta.info.title
+        ) : 'Unknown Track'
       ,
       none: () => null
     });

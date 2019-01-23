@@ -9,7 +9,7 @@ export interface IntegrationSettings {
 export interface PlayStateTrackMeta {
   info?: {
     title: string;
-    artist: string;
+    artist?: string;
   };
 }
 
