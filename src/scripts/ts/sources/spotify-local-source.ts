@@ -55,10 +55,7 @@ export class SpotifyLocalSource extends Source {
       artist: track.artists.map(a => a.name).join(' & '),
       title: track.name
     };
-    return {
-      id: track.id ? track.id : (info.artist + ' - ' + info.title),
-      info
-    };
+    return {info};
   }
 
   private updateTimestamp() {

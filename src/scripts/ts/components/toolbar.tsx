@@ -110,6 +110,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       return (
         <div className={this.props.className}>
           <IntegrationButton integration={this.state.integration} settings={this.state.integration.getSettings()} />
+          <span className="description">{this.getTrackDescription()}</span>
         </div>
       );
     } else {
@@ -144,8 +145,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     return this.props.playState.caseOf({
       just: state =>
         state.meta.info ?
-        `${state.meta.info.artist} - ${state.meta.info.title}` :
-        state.meta.id
+        `${state.meta.info.artist} - ${state.meta.info.title}` : 'Unknown Track'
       ,
       none: () => null
     });

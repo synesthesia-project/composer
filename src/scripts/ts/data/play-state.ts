@@ -22,8 +22,6 @@ export interface MediaPlaying {
 }
 
 export interface PlayStateTrackMeta {
-  /** A unique identifier */
-  id: string;
   info?: {
     title: string;
     artist: string;
@@ -34,6 +32,7 @@ export interface PlayStateDataOnly {
   /** Duration of the media in milliseconds */
   durationMillis: number;
   meta: PlayStateTrackMeta;
+  // TODO switch to using LayerState from '@synesthesia-project/core/protocols/control/messages';
   state: Either<MediaPaused, MediaPlaying>;
 }
 
@@ -57,9 +56,9 @@ export function playStateDataEquals(a: PlayStateDataOnly, b: PlayStateDataOnly) 
 export function fromIntegrationData(data: IntegrationPlayStateData): Maybe<PlayStateDataOnly> {
   // TODO: implement playSpeed
   // TODO: replace type definitions in here with those specified in shared.ts
-  const state: Either<MediaPaused, MediaPlaying> = data.state.state === 'playing' ?
+  const state: Either<MediaPaused, MediaPlaying> = data.state.type === 'playing' ?
     right({effectiveStartTimeMillis: data.state.effectiveStartTimeMillis}) :
-    left({timeMillis: data.state.timeMillis});
+    left({timeMillis: data.state.positionMillis});
   return just({
     durationMillis: data.durationMillis,
     meta: data.meta,

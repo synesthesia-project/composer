@@ -62,7 +62,6 @@ export class SpotifySource extends Source {
             right({effectiveStartTimeMillis: new Date().getTime() - state.progress_ms}) :
             left({timeMillis: state.progress_ms}),
           meta: {
-            id: state.item.id,
             info: {
               artist: state.item.artists.map(a => a.name).join(' & '),
               title: state.item.name

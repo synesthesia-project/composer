@@ -1,4 +1,5 @@
 import { Message } from '@synesthesia-project/core/protocols/util/messages';
+import { LayerState as PlayState } from '@synesthesia-project/core/protocols/control/messages';
 
 export interface IntegrationSettings {
   name: string;
@@ -6,8 +7,6 @@ export interface IntegrationSettings {
 }
 
 export interface PlayStateTrackMeta {
-  /** A unique identifier */
-  id: string;
   info?: {
     title: string;
     artist: string;
@@ -17,9 +16,7 @@ export interface PlayStateTrackMeta {
 export type PlayStateData = {
   durationMillis: number;
   meta: PlayStateTrackMeta;
-  state:
-    {state: 'playing'; effectiveStartTimeMillis: number; playSpeed: number;} |
-    {state: 'paused'; timeMillis: number;}
+  state: PlayState;
 };
 
 export type PlayStateNotification = {
