@@ -1,12 +1,12 @@
 import { Endpoint } from '@synesthesia-project/core/protocols/util/endpoint';
 
-import { IntegrationSettings, PlayStateData, Notification, IntegrationMessage }
+import { IntegrationSettings, PlayStateData, ComposerRequest, Request, Response, Notification, IntegrationMessage }
     from '../../../integration/shared';
 import { PlayStateControls, fromIntegrationData } from '../data/play-state';
 
 import { Source } from './source';
 
-export class ComposerEndpoint extends Endpoint<never, never, Notification> {
+export class ComposerEndpoint extends Endpoint<Request, Response, Notification> {
 
     private readonly playStateUpdated: (state: PlayStateData) => void;
 
@@ -34,6 +34,10 @@ export class ComposerEndpoint extends Endpoint<never, never, Notification> {
 
     protected handleClosed() {
         console.log('connection closed');
+    }
+
+    public request(request: Request) {
+        return this.sendRequest(request);
     }
 
 }
@@ -96,12 +100,17 @@ export class IntegrationSource extends Source {
     }
 
     protected controls(): PlayStateControls {
-        // TODO
+        // TODO: notify the user when a request has failed
         return {
-            toggle: () => console.debug('toggle()'),
-            pause: () => console.debug('pause()'),
-            goToTime: (timeMillis: number) => console.debug('goToTime(' + timeMillis + ')')
+            toggle: () => this.sendRequest({request: 'toggle'}),
+            pause: () => this.sendRequest({request: 'pause'}),
+            goToTime: (positionMillis: number) => this.sendRequest({request: 'go-to-time', positionMillis}),
         };
+    }
+
+    private sendRequest(request: Request) {
+        if (this.connection)
+            this.connection.endpoint.request(request);
     }
 
     public addListener(listener: StateListener) {

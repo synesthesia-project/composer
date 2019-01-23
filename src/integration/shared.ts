@@ -6,6 +6,24 @@ export interface IntegrationSettings {
   websocketURL: string;
 }
 
+export interface ToggleRequest {
+  request: 'toggle';
+}
+
+export interface PauseRequest {
+  request: 'pause';
+}
+
+export interface GoToTimeRequest {
+  request: 'go-to-time';
+  positionMillis: number;
+}
+
+/** Response for [[ToggleRequest]], [[PauseRequest]] or [[GoToTimeRequest]] */
+export interface ControlResponse {
+  success: boolean;
+}
+
 export interface PlayStateTrackMeta {
   info?: {
     title: string;
@@ -24,6 +42,20 @@ export type PlayStateNotification = {
   data: PlayStateData;
 };
 
-export type Notification = PlayStateNotification;
+/** Request sent from the composer to the server */
+export type ComposerRequest = ToggleRequest | PauseRequest | GoToTimeRequest;
 
-export type IntegrationMessage = Message<never, never, Notification>;
+/** Response sent from the server to the composer */
+export type ServerResponse = ControlResponse;
+
+/** Notification sent from the server to the composer */
+export type ServerNotification = PlayStateNotification;
+
+/** All Request types */
+export type Request = ComposerRequest;
+/** All Response types */
+export type Response = ServerResponse;
+/** All Response types */
+export type Notification = ServerNotification;
+
+export type IntegrationMessage = Message<Request, Response, Notification>;
