@@ -1,27 +1,9 @@
 import { Message } from '@synesthesia-project/core/protocols/util/messages';
-import { LayerState as PlayState } from '@synesthesia-project/core/protocols/control/messages';
+import { ToggleRequest, PauseRequest, GoToTimeRequest, ControlResponse, LayerState as PlayState } from '@synesthesia-project/core/protocols/control/messages';
 
 export interface IntegrationSettings {
   name: string;
   websocketURL: string;
-}
-
-export interface ToggleRequest {
-  request: 'toggle';
-}
-
-export interface PauseRequest {
-  request: 'pause';
-}
-
-export interface GoToTimeRequest {
-  request: 'go-to-time';
-  positionMillis: number;
-}
-
-/** Response for [[ToggleRequest]], [[PauseRequest]] or [[GoToTimeRequest]] */
-export interface ControlResponse {
-  success: boolean;
 }
 
 export interface PlayStateTrackMeta {
