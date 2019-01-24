@@ -1,4 +1,5 @@
 import * as React from 'react';
+import {isEqual} from 'lodash';
 import {styled, buttonDisabled, rectButton, buttonPressed} from './styling';
 
 import * as file from '@synesthesia-project/core/file';
@@ -54,6 +55,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     const w = window as Window;
     if (w.integrationSettings) {
       integration = new IntegrationSource(w.integrationSettings);
+      integration.addListener('new-cue-file', file => this.props.fileLoaded(file));
     }
 
     console.log('integrationSettings', w.integrationSettings);
@@ -102,6 +104,25 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       const validatedFile = validateFile(obj);
       this.props.fileLoaded(validatedFile);
     });
+  }
+
+  public componentWillReceiveProps(nextProps: FileSourceProps): void {
+    if (nextProps.file !== this.props.file &&
+        this.state.integration &&
+        !isEqual(this.props.file, nextProps.file)) {
+      // Time to send new song info to the server, as it's changed
+      // TODO: use real ID that server gives
+      const nextFile = nextProps.file;
+      const integration = this.state.integration;
+      const cueFile = nextFile.caseOf({
+        just: cueFile => cueFile,
+        none: () => this.props.file.caseOf({
+          just: cueFile => cueFile,
+          none: () => file.emptyFile(1000)
+        })
+      });
+      integration.sendCueFile('1', cueFile);
+    }
   }
 
   public render() {

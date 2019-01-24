@@ -29,9 +29,9 @@ class IntegrationButton extends React.Component<Props, State> {
   }
 
   public componentDidMount() {
-    this.props.integration.addListener(state => {
+    this.props.integration.addListener('state', state => {
       this.setState({state});
-    })
+    });
   }
 
   private onClick() {

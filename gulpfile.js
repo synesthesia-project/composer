@@ -56,7 +56,7 @@ gulp.task('tslint', function() {
   return gulp.src(['src/**/*.ts', 'src/**/*.tsx'])
   .pipe(tslint({
     formatter: 'verbose',
-    configuration: '../tslint.json'
+    configuration: 'tslint.json'
   }))
   .on('error', handleError)
   .pipe(tslint.report());
@@ -73,20 +73,8 @@ gulp.task("webpack", ['bower', 'ts', 'copy-js'], function(callback) {
             filename: "[name].js",
             path: __dirname + "/dist"
         },
-
-        // // Enable sourcemaps for debugging webpack's output.
-        // devtool: "source-map",
-
-        // module: {
-        //     preLoaders: [
-        //         { test: /\.js$/, loader: "source-map" }
-        //     ]
-        // },
     }, function(err, stats) {
         if(err) throw new gutil.PluginError("webpack", err);
-        // gutil.log("[webpack]", stats.toString({
-        //     // output options
-        // }));
         callback();
     });
 });
@@ -116,5 +104,6 @@ gulp.task('default', function(callback) {
   runSequence(
     'clean',
     'dist',
+    'tslint',
     callback);
 });
