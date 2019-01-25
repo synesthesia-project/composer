@@ -1,6 +1,8 @@
 import {Maybe, Either, left, right, just} from './functional';
 
-import {PlayStateData as IntegrationPlayStateData} from '../../../integration/shared';
+import { PlayStateTrackMeta, PlayStateData as IntegrationPlayStateData } from '../../../integration/shared';
+
+export { PlayStateTrackMeta };
 
 export interface PlayStateControls {
   /**
@@ -21,16 +23,10 @@ export interface MediaPlaying {
   effectiveStartTimeMillis: number;
 }
 
-export interface PlayStateTrackMeta {
-  info?: {
-    title: string;
-    artist?: string;
-  };
-}
-
 export interface PlayStateDataOnly {
   /** Duration of the media in milliseconds */
   durationMillis: number;
+  /** Unique identifier for the specific source */
   meta: PlayStateTrackMeta;
   // TODO switch to using LayerState from '@synesthesia-project/core/protocols/control/messages';
   state: Either<MediaPaused, MediaPlaying>;

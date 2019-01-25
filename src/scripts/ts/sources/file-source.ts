@@ -13,7 +13,9 @@ export class FileSource extends Source {
   constructor(file: HTMLInputElement) {
     super();
     this.audio = document.createElement('audio');
-    this.meta = {};
+    this.meta = {
+      id: file.value
+    };
 
     this.updatePlayState = this.updatePlayState.bind(this);
 

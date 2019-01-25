@@ -55,7 +55,17 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     const w = window as Window;
     if (w.integrationSettings) {
       integration = new IntegrationSource(w.integrationSettings);
-      integration.addListener('new-cue-file', file => this.props.fileLoaded(file));
+      integration.addListener('new-cue-file', (id, file) => {
+        const currentId = this.props.playState.caseOf({
+          just: state => state.meta.id,
+          none: () => null
+        });
+        if (currentId === id) {
+          this.props.fileLoaded(file);
+        } else {
+          console.log('Got cue file for unknown song: ', id);
+        }
+      });
     }
 
     console.log('integrationSettings', w.integrationSettings);
@@ -107,9 +117,14 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   public componentWillReceiveProps(nextProps: FileSourceProps): void {
+    const trackId = nextProps.playState.caseOf({
+      just: state => state.meta.id,
+      none: () => null
+    });
     if (nextProps.file !== this.props.file &&
         this.state.integration &&
-        !isEqual(this.props.file, nextProps.file)) {
+        !isEqual(this.props.file, nextProps.file) &&
+        trackId) {
       // Time to send new song info to the server, as it's changed
       // TODO: use real ID that server gives
       const nextFile = nextProps.file;
@@ -121,7 +136,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           none: () => file.emptyFile(1000)
         })
       });
-      integration.sendCueFile('1', cueFile);
+      integration.sendCueFile(trackId, cueFile);
     }
   }
 
