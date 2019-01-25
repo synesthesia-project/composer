@@ -156,8 +156,9 @@ export class IntegrationSource extends Source {
     }
 
     public sendCueFile(id: string, cueFile: CueFile | null) {
-        // TODO: send blank cue files
-        if (this.connection && cueFile)
+        // Only send cue files if not blank (i.e. not initialized from timestamp only)
+        // TODO: implement a request that will handle "clearing" the current file
+        if (this.connection && cueFile && cueFile.layers.length > 0)
             this.connection.endpoint.sendNotification({id, type: 'cue-file-modified', file: cueFile});
     }
 }
