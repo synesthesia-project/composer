@@ -19,9 +19,7 @@ import {SpotifySource} from '../sources/spotify-source';
 import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
 
-import Save = require('react-icons/lib/md/save');
-import FolderOpen = require('react-icons/lib/md/folder-open');
-import Tab = require('react-icons/lib/md/tab');
+import {MdSave, MdFolderOpen} from 'react-icons/md';
 
 import { ConnectionButton } from './connection-button';
 import { IntegrationButton } from './integration-button';
@@ -147,13 +145,15 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
         <div className={this.props.className}>
           <IntegrationButton integration={this.state.integration} settings={this.state.integration.getSettings()} />
           <span className="description">{this.getTrackDescription()}</span>
+          <span className="grow"/>
+          <button onClick={this.openFile} title="Open"><MdFolderOpen/></button>
         </div>
       );
     } else {
       return (
         <div className={this.props.className}>
           <input id="file_picker" type="file" onChange={this.loadAudioFile} />
-          <label htmlFor="file_picker"><FolderOpen/> Open Audio File</label>
+          <label htmlFor="file_picker"><MdFolderOpen/> Open Audio File</label>
           <button className={source === 'spotify' ? ' pressed' : ''} onClick={this.toggleSpotify}>
             <SpotifyIcon /> Connect To Remote
           </button>
@@ -170,8 +170,8 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
           <ConnectionButton file={this.props.file} playState={this.props.playState} />
-          <button onClick={this.openFile} title="Open"><FolderOpen/></button>
-          <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><Save/></button>
+          <button onClick={this.openFile} title="Open"><MdFolderOpen/></button>
+          <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><MdSave/></button>
         </div>
       );
     }

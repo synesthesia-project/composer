@@ -8,7 +8,7 @@ import * as file from '@synesthesia-project/core/file';
 import * as fileManipulation from '../data/file-manipulation';
 import * as util from '@synesthesia-project/core/util';
 
-import Add = require('react-icons/lib/md/add');
+import {MdAdd} from 'react-icons/md';
 
 export interface TimelineState {
 }
@@ -47,7 +47,7 @@ class Timeline extends React.Component<TimelineProps, TimelineState> {
     return (
       <div className={this.props.className}>
         <div className="side left">
-          <span className="add-button" onClick={this.addLayerClicked}><Add /></span>
+          <span className="add-button" onClick={this.addLayerClicked}><MdAdd /></span>
         </div>
         <div className="side right" />
         <div className="timeline" ref={t => this.props.timelineRef(t)}>

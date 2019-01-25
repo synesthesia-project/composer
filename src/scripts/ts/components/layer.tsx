@@ -8,9 +8,7 @@ import * as selection from '../data/selection';
 import * as util from '@synesthesia-project/core/util';
 import * as stageState from '../data/stage-state';
 
-import Keyboard = require('react-icons/lib/md/keyboard');
-import MusicNote = require('react-icons/lib/md/music-note');
-import Settings = require('react-icons/lib/md/settings');
+import {MdKeyboard, MdSettings} from 'react-icons/md';
 
 export interface LayerState { }
 
@@ -70,12 +68,12 @@ class Layer extends React.Component<LayerProps, LayerState> {
           <span
             className={'button' + (this.isSelected() ? ' selected' : '')}
             title="Bind to Keyboard"
-            onClick={this.toggleSelect}><Keyboard /></span>
+            onClick={this.toggleSelect}><MdKeyboard /></span>
           <span className="column">
             <span className={'button' + (this.isBinding() ? ' selected' : '')} onClick={this.toggleRequestBind}>
               <span>MIDI{binding ? (': ' + binding) : ''}</span>
             </span>
-            <span className="button grow" title="Settings" onClick={this.openLayerOptions}><Settings /></span>
+            <span className="button grow" title="Settings" onClick={this.openLayerOptions}><MdSettings /></span>
           </span>
         </div>
         <LayerVisualization layer={this.props.layer} positionMillis={this.props.positionMillis} />

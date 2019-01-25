@@ -7,7 +7,7 @@ import * as fileManipulation from '../data/file-manipulation';
 import * as util from '@synesthesia-project/core/util';
 import {DelayedPropigationInput} from './util/input';
 
-import Delete = require('react-icons/lib/md/delete');
+import {MdDelete} from 'react-icons/md';
 
 interface EventPropertiesProps {
   // Properties
@@ -121,7 +121,7 @@ class EventProperties extends React.Component<EventPropertiesProps, {}> {
                   onChange={this.onDurationChange}/>
               </div>
             <div className="property">
-              <button onClick={this.onDelete} title="Delete"><Delete/></button>
+              <button onClick={this.onDelete} title="Delete"><MdDelete/></button>
             </div>
             <div className="property" title="Distribute the selected items evenly">
               <button className={selectedEvents === 1 ? 'disabled' : ''}onClick={this.onSpread}>DISTRIBUTE</button>

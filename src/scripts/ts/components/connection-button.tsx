@@ -9,7 +9,7 @@ import {styled} from './styling';
 import {PlayState, PlayStateData} from '../data/play-state';
 import {overlays} from './util/overlays';
 
-import SettingsEthernet = require('react-icons/lib/md/settings-ethernet');
+import {MdSettingsEthernet} from 'react-icons/md';
 
 type ConnectionState = 'not_connected' | 'connecting' | 'connected' | 'error';
 
@@ -165,7 +165,7 @@ class ConnectionButton extends React.Component<ConnectionButtonProps, Connection
       <div className={this.props.className}>
         {statusText}
         <button className="connection-button" title={buttonTitle} onClick={this.onClick}>
-          <SettingsEthernet/>
+          <MdSettingsEthernet/>
           <span className={`indicator ${this.state.state}`} />
         </button>
       </div>

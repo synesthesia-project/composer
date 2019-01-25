@@ -8,8 +8,7 @@ import {displayMillis} from '../display/timing';
 
 import {PlayerBar} from './player-bar';
 
-import Pause = require('react-icons/lib/md/pause');
-import Play = require('react-icons/lib/md/play-arrow');
+import {MdPlayArrow, MdPause} from 'react-icons/md';
 
 const NO_TIME_STRING = '---';
 
@@ -70,7 +69,7 @@ class Player extends React.Component<PlayerProps, PlayerState> {
     return (
       <div className={className} ref={div => this.props.playerRef(div)}>
         <span className="play-pause" onClick={this.playPauseClicked}>
-          { playing ? <Pause /> : <Play /> }
+          { playing ? <MdPause /> : <MdPlayArrow /> }
         </span>
         <span className="elapsed-time">{this.state.elapsedTimeText ? this.state.elapsedTimeText : NO_TIME_STRING}</span>
         <PlayerBar
