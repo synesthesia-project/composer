@@ -19,7 +19,7 @@ import {SpotifySource} from '../sources/spotify-source';
 import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
 
-import {MdSave, MdFolderOpen} from 'react-icons/md';
+import {MdSave, MdFolderOpen, MdUndo, MdRedo} from 'react-icons/md';
 
 import { ConnectionButton } from './connection-button';
 import { IntegrationButton } from './integration-button';
@@ -81,6 +81,8 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     this.toggleSpotifyLocal = this.toggleSpotifyLocal.bind(this);
     this.saveFile = this.saveFile.bind(this);
     this.openFile = this.openFile.bind(this);
+    this.undo = this.undo.bind(this);
+    this.redo = this.redo.bind(this);
   }
 
   public componentDidMount() {
@@ -146,7 +148,8 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           <IntegrationButton integration={this.state.integration} settings={this.state.integration.getSettings()} />
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
-          <button onClick={this.openFile} title="Open"><MdFolderOpen/></button>
+          <button onClick={this.undo} title="Undo"><MdUndo/></button>
+          <button onClick={this.redo} title="Redo"><MdRedo/></button>
         </div>
       );
     } else {
@@ -238,6 +241,34 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
         }
       );
     }
+  }
+
+  private undo() {
+    this.props.playState.caseOf({
+      just: state => {
+        if (this.state.integration)
+          this.state.integration.sendRequest({
+            request: 'file-action',
+            id: state.meta.id,
+            action: 'undo'
+          });
+      },
+      none: () => { /* */ }
+    });
+  }
+
+  private redo() {
+    this.props.playState.caseOf({
+      just: state => {
+        if (this.state.integration)
+          this.state.integration.sendRequest({
+            request: 'file-action',
+            id: state.meta.id,
+            action: 'redo'
+          });
+      },
+      none: () => { /* */ }
+    });
   }
 }
 

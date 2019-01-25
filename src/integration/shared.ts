@@ -8,6 +8,12 @@ export interface IntegrationSettings {
   websocketURL: string;
 }
 
+export interface FileActionRequest {
+  request: 'file-action';
+  id: string;
+  action: 'undo' | 'redo';
+}
+
 export interface PlayStateTrackMeta {
   id: string;
   info?: {
@@ -35,7 +41,7 @@ export type CueFileModifiedNotification = {
 };
 
 /** Request sent from the composer to the server */
-export type ComposerRequest = ToggleRequest | PauseRequest | GoToTimeRequest;
+export type ComposerRequest = ToggleRequest | PauseRequest | GoToTimeRequest | FileActionRequest;
 
 /** Response sent from the server to the composer */
 export type ServerResponse = ControlResponse;

@@ -28,6 +28,7 @@ export class ComposerEndpoint extends Endpoint<Request, Response, Notification> 
     }
 
     protected handleNotification(notification: Notification) {
+        console.log('handleNotification', notification);
         switch (notification.type) {
             case 'state':
                 this.playStateUpdated(notification.data);
@@ -119,9 +120,10 @@ export class IntegrationSource extends Source {
         };
     }
 
-    private sendRequest(request: Request) {
+    public sendRequest(request: Request) {
         if (this.connection)
-            this.connection.endpoint.request(request);
+            return this.connection.endpoint.request(request);
+        return Promise.reject(new Error('connection not active'));
     }
 
     public addListener(event: 'state', listener: StateListener): void;
