@@ -34,11 +34,26 @@ export type PlayStateNotification = {
 };
 
 /** Can be sent either from the server of from the composer */
-export type CueFileModifiedNotification = {
+export interface ComposerCueFileModifiedNotification {
   type: 'cue-file-modified';
   id: string;
   file: CueFile;
+  fileState: null;
+}
+
+export type FileState = {
+  canSave: boolean;
+  canUndo: boolean;
+  canRedo: boolean;
 };
+
+/** Can be sent either from the server of from the composer */
+export interface ServerCueFileModifiedNotification {
+  type: 'cue-file-modified';
+  id: string;
+  file: CueFile;
+  fileState: FileState;
+}
 
 /** Request sent from the composer to the server */
 export type ComposerRequest = ToggleRequest | PauseRequest | GoToTimeRequest | FileActionRequest;
@@ -47,15 +62,15 @@ export type ComposerRequest = ToggleRequest | PauseRequest | GoToTimeRequest | F
 export type ServerResponse = ControlResponse;
 
 /** Notification sent from the server to the composer */
-export type ServerNotification = PlayStateNotification | CueFileModifiedNotification;
+export type ServerNotification = PlayStateNotification | ServerCueFileModifiedNotification;
 /** Notification sent from the composer to the server */
-export type ComposerrNotification = CueFileModifiedNotification;
+export type ComposerNotification = ComposerCueFileModifiedNotification;
 
 /** All Request types */
 export type Request = ComposerRequest;
 /** All Response types */
 export type Response = ServerResponse;
 /** All Response types */
-export type Notification = ServerNotification | ComposerrNotification;
+export type Notification = ServerNotification | ComposerNotification;
 
 export type IntegrationMessage = Message<Request, Response, Notification>;

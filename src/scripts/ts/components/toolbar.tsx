@@ -5,7 +5,7 @@ import {styled, buttonDisabled, rectButton, buttonPressed} from './styling';
 import * as file from '@synesthesia-project/core/file';
 import { validateFile } from '@synesthesia-project/core/file/file-validation';
 
-import { IntegrationSettings } from '../../../integration/shared';
+import { IntegrationSettings, FileState } from '../../../integration/shared';
 
 import * as spotifyAuth from '../auth/spotify';
 import {SpotifySdk, spotifyWebPlaybackSDKReady} from '../external/spotify-sdk';
@@ -37,8 +37,10 @@ export interface FileSourceProps {
   fileLoaded: (file: file.CueFile) => void;
 }
 
+type Integration = { source: IntegrationSource; fileState: FileState } | null;
+
 interface FileSourceState {
-  integration: IntegrationSource | null;
+  integration: Integration;
   source: Source | null;
   companionAllowed: boolean;
   spotifyWebPlaybackSDK: SpotifySdk | null;
@@ -53,17 +55,35 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   constructor(props: FileSourceProps) {
     super(props);
 
-    let integration: IntegrationSource | null = null;
+    let integration: Integration = null;
     const w = window as Window;
     if (w.integrationSettings) {
-      integration = new IntegrationSource(w.integrationSettings);
-      integration.addListener('new-cue-file', (id, file) => {
+      integration = {
+        source: new IntegrationSource(w.integrationSettings),
+        fileState: {
+          canRedo: false,
+          canSave: false,
+          canUndo: false
+        }
+      };
+      integration.source.addListener('new-cue-file', (id, file, fileState) => {
         const currentId = this.props.playState.caseOf({
           just: state => state.meta.id,
           none: () => null
         });
         if (currentId === id) {
           this.props.fileLoaded(file);
+          console.log(fileState);
+          this.setState(state => {
+            let integration: Integration = null;
+            if (state.integration) {
+              integration =  {
+                source: state.integration.source,
+                fileState,
+              };
+            }
+            return {integration};
+          });
         } else {
           console.log('Got cue file for unknown song: ', id);
         }
@@ -95,7 +115,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     spotifyWebPlaybackSDKReady.then(spotifyWebPlaybackSDK => this.setState({spotifyWebPlaybackSDK}));
     // Set source to integration if it's set
     if (this.state.integration) {
-      this.setNewSource(this.state.integration);
+      this.setNewSource(this.state.integration.source);
     }
   }
 
@@ -141,7 +161,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           none: () => file.emptyFile(1000)
         })
       });
-      integration.sendCueFile(trackId, cueFile);
+      integration.source.sendCueFile(trackId, cueFile);
     }
   }
 
@@ -150,12 +170,12 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     if (this.state.integration) {
       return (
         <div className={this.props.className}>
-          <IntegrationButton integration={this.state.integration} settings={this.state.integration.getSettings()} />
+          <IntegrationButton integration={this.state.integration.source} settings={this.state.integration.source.getSettings()} />
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
-          <button onClick={this.undo} title="Undo"><MdUndo/></button>
-          <button onClick={this.redo} title="Redo"><MdRedo/></button>
-          <button onClick={this.save} title="Save"><MdSave/></button>
+          <button className={this.state.integration.fileState.canUndo ? '' : 'disabled'} onClick={this.undo} title="Undo"><MdUndo/></button>
+          <button className={this.state.integration.fileState.canRedo ? '' : 'disabled'} onClick={this.redo} title="Redo"><MdRedo/></button>
+          <button className={this.state.integration.fileState.canSave ? '' : 'disabled'} onClick={this.save} title="Save"><MdSave/></button>
         </div>
       );
     } else {
@@ -253,7 +273,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     return () => this.props.playState.caseOf({
       just: state => {
         if (this.state.integration)
-          this.state.integration.sendRequest({
+          this.state.integration.source.sendRequest({
             request: 'file-action',
             id: state.meta.id,
             action

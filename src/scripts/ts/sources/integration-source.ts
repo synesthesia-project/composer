@@ -1,7 +1,7 @@
 import { CueFile } from '@synesthesia-project/core/file';
 import { Endpoint } from '@synesthesia-project/core/protocols/util/endpoint';
 
-import { IntegrationSettings, PlayStateData, ComposerRequest, Request, Response, Notification, IntegrationMessage }
+import { IntegrationSettings, PlayStateData, FileState, Request, Response, Notification, IntegrationMessage }
     from '../../../integration/shared';
 import { PlayStateControls, fromIntegrationData } from '../data/play-state';
 
@@ -10,12 +10,12 @@ import { Source } from './source';
 export class ComposerEndpoint extends Endpoint<Request, Response, Notification> {
 
     private readonly playStateUpdated: (state: PlayStateData) => void;
-    private readonly cueFileUpdated: (id: string, state: CueFile) => void;
+    private readonly cueFileUpdated: (id: string, state: CueFile, fileState: FileState) => void;
 
     public constructor(
         sendMessage: (msg: IntegrationMessage) => void,
         playStateUpdated: (state: PlayStateData) => void,
-        cueFileUpdated: (id: string, file: CueFile) => void) {
+        cueFileUpdated: (id: string, file: CueFile, fileState: FileState) => void) {
         super(sendMessage);
         this.playStateUpdated = playStateUpdated;
         this.cueFileUpdated = cueFileUpdated;
@@ -34,8 +34,13 @@ export class ComposerEndpoint extends Endpoint<Request, Response, Notification> 
                 this.playStateUpdated(notification.data);
                 return;
             case 'cue-file-modified':
-                this.cueFileUpdated(notification.id, notification.file);
-                return;
+                if (notification.fileState) {
+                    this.cueFileUpdated(notification.id, notification.file, notification.fileState);
+                    return;
+                } else {
+                    console.error('notification missing fileState:', notification);
+                    return;
+                }
         }
         console.error('unknown notification:', notification);
     }
@@ -52,7 +57,7 @@ export class ComposerEndpoint extends Endpoint<Request, Response, Notification> 
 
 export type StateListener = (state: 'not_connected' | 'connecting' | 'connected' | 'error') => void;
 
-export type CueFileListener = (id: string, file: CueFile) => void;
+export type CueFileListener = (id: string, file: CueFile, state: FileState) => void;
 
 export class IntegrationSource extends Source {
 
@@ -86,7 +91,7 @@ export class IntegrationSource extends Source {
         const endpoint = new ComposerEndpoint(
             msg => socket.send(JSON.stringify(msg)),
             playState => (this.playStateUpdated(fromIntegrationData(playState))),
-            (id, cueFile) => this.cueFileListeners.forEach(l => l(id, cueFile))
+            (id, cueFile, fileState) => this.cueFileListeners.forEach(l => l(id, cueFile, fileState))
         );
         const connection = this.connection = {socket, endpoint};
         for (const l of this.stateListeners) l('connecting');
@@ -161,7 +166,7 @@ export class IntegrationSource extends Source {
         // Only send cue files if not blank (i.e. not initialized from timestamp only)
         // TODO: implement a request that will handle "clearing" the current file
         if (this.connection && cueFile && cueFile.layers.length > 0)
-            this.connection.endpoint.sendNotification({id, type: 'cue-file-modified', file: cueFile});
+            this.connection.endpoint.sendNotification({id, type: 'cue-file-modified', file: cueFile, fileState: null});
     }
 }
 
