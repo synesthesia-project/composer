@@ -11,7 +11,7 @@ export interface IntegrationSettings {
 export interface FileActionRequest {
   request: 'file-action';
   id: string;
-  action: 'undo' | 'redo';
+  action: 'undo' | 'redo' | 'save';
 }
 
 export interface PlayStateTrackMeta {

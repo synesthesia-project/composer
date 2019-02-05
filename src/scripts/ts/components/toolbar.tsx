@@ -46,6 +46,10 @@ interface FileSourceState {
 
 class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
 
+  private readonly undo: () => void;
+  private readonly redo: () => void;
+  private readonly save: () => void;
+
   constructor(props: FileSourceProps) {
     super(props);
 
@@ -81,8 +85,9 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     this.toggleSpotifyLocal = this.toggleSpotifyLocal.bind(this);
     this.saveFile = this.saveFile.bind(this);
     this.openFile = this.openFile.bind(this);
-    this.undo = this.undo.bind(this);
-    this.redo = this.redo.bind(this);
+    this.undo = this.fileAction('undo');
+    this.redo = this.fileAction('redo');
+    this.save = this.fileAction('save');
   }
 
   public componentDidMount() {
@@ -150,6 +155,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           <span className="grow"/>
           <button onClick={this.undo} title="Undo"><MdUndo/></button>
           <button onClick={this.redo} title="Redo"><MdRedo/></button>
+          <button onClick={this.save} title="Save"><MdSave/></button>
         </div>
       );
     } else {
@@ -243,28 +249,14 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     }
   }
 
-  private undo() {
-    this.props.playState.caseOf({
+  private fileAction(action: 'undo' | 'redo' | 'save') {
+    return () => this.props.playState.caseOf({
       just: state => {
         if (this.state.integration)
           this.state.integration.sendRequest({
             request: 'file-action',
             id: state.meta.id,
-            action: 'undo'
-          });
-      },
-      none: () => { /* */ }
-    });
-  }
-
-  private redo() {
-    this.props.playState.caseOf({
-      just: state => {
-        if (this.state.integration)
-          this.state.integration.sendRequest({
-            request: 'file-action',
-            id: state.meta.id,
-            action: 'redo'
+            action
           });
       },
       none: () => { /* */ }
