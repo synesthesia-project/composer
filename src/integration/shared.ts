@@ -30,7 +30,7 @@ export type PlayStateData = {
 
 export type PlayStateNotification = {
   type: 'state';
-  data: PlayStateData;
+  data: PlayStateData | null;
 };
 
 /** Can be sent either from the server of from the composer */

@@ -1,6 +1,7 @@
-import {Maybe, Either, left, right, just} from './functional';
+import {Maybe, Either, left, right, just, none} from './functional';
 
 import { PlayStateTrackMeta, PlayStateData as IntegrationPlayStateData } from '../../../integration/shared';
+import { O_NONBLOCK } from 'constants';
 
 export { PlayStateTrackMeta };
 
@@ -49,9 +50,10 @@ export function playStateDataEquals(a: PlayStateDataOnly, b: PlayStateDataOnly) 
  );
 }
 
-export function fromIntegrationData(data: IntegrationPlayStateData): Maybe<PlayStateDataOnly> {
+export function fromIntegrationData(data: IntegrationPlayStateData | null): Maybe<PlayStateDataOnly> {
   // TODO: implement playSpeed
   // TODO: replace type definitions in here with those specified in shared.ts
+  if (!data) return none();
   const state: Either<MediaPaused, MediaPlaying> = data.state.type === 'playing' ?
     right({effectiveStartTimeMillis: data.state.effectiveStartTimeMillis}) :
     left({timeMillis: data.state.positionMillis});

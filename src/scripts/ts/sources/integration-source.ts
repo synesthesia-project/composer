@@ -9,12 +9,12 @@ import { Source } from './source';
 
 export class ComposerEndpoint extends Endpoint<Request, Response, Notification> {
 
-    private readonly playStateUpdated: (state: PlayStateData) => void;
+    private readonly playStateUpdated: (state: PlayStateData | null) => void;
     private readonly cueFileUpdated: (id: string, state: CueFile, fileState: FileState) => void;
 
     public constructor(
         sendMessage: (msg: IntegrationMessage) => void,
-        playStateUpdated: (state: PlayStateData) => void,
+        playStateUpdated: (state: PlayStateData | null) => void,
         cueFileUpdated: (id: string, file: CueFile, fileState: FileState) => void) {
         super(sendMessage);
         this.playStateUpdated = playStateUpdated;
