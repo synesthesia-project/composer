@@ -46,6 +46,7 @@ export class ComposerEndpoint extends Endpoint<Request, Response, Notification> 
     }
 
     protected handleClosed() {
+        this.playStateUpdated(null);
         console.log('connection closed');
     }
 
