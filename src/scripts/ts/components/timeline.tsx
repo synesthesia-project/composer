@@ -89,7 +89,8 @@ class Timeline extends React.Component<TimelineProps, TimelineState> {
    */
   private mouseDown(e: React.MouseEvent<{}>) {
     const pos = this.getMousePosition(e);
-    this.props.playState.fmap(state => state.controls.goToTime(state.durationMillis * pos));
+    if (this.props.playState)
+      this.props.playState.controls.goToTime(this.props.playState.durationMillis * pos);
   }
 
   private mouseEnterOrMove(e: React.MouseEvent<{}>) {

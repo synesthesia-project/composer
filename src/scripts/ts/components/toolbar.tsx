@@ -21,7 +21,6 @@ import {SpotifyIcon} from './icons/spotify';
 
 import {MdSave, MdFolderOpen, MdUndo, MdRedo} from 'react-icons/md';
 
-import { ConnectionButton } from './connection-button';
 import { IntegrationButton } from './integration-button';
 
 interface Window {
@@ -67,10 +66,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
         }
       };
       integration.source.addListener('new-cue-file', (id, file, fileState) => {
-        const currentId = this.props.playState.caseOf({
-          just: state => state.meta.id,
-          none: () => null
-        });
+        const currentId = this.props.playState ? this.props.playState.meta.id : null;
         if (currentId === id) {
           this.props.fileLoaded(file);
           console.log(fileState);
@@ -120,14 +116,10 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   public saveFile() {
-    const filename = this.props.playState.caseOf({
-      just: state =>
-        state.meta.info ?
-        `${state.meta.info.artist} - ${state.meta.info.title}.scue` :
-        'song.scue'
-      ,
-      none: () => 'song.scue'
-    });
+    const state = this.props.playState;
+    const filename = state && state.meta.info ?
+      `${state.meta.info.artist} - ${state.meta.info.title}.scue` :
+      'song.scue';
     this.props.file.fmap(file => {
       storage.saveStringAsFile(JSON.stringify(file), filename);
     });
@@ -142,16 +134,12 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   public componentWillReceiveProps(nextProps: FileSourceProps): void {
-    const trackId = nextProps.playState.caseOf({
-      just: state => state.meta.id,
-      none: () => null
-    });
+    const trackId = nextProps.playState ? nextProps.playState.meta.id : null;
     if (nextProps.file !== this.props.file &&
         this.state.integration &&
         !isEqual(this.props.file, nextProps.file) &&
         trackId) {
       // Time to send new song info to the server, as it's changed
-      // TODO: use real ID that server gives
       const nextFile = nextProps.file;
       const integration = this.state.integration;
       const cueFile = nextFile.caseOf({
@@ -198,7 +186,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           </button>
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
-          <ConnectionButton file={this.props.file} playState={this.props.playState} />
           <button onClick={this.openFile} title="Open"><MdFolderOpen/></button>
           <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><MdSave/></button>
         </div>
@@ -207,16 +194,15 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   private getTrackDescription() {
-    return this.props.playState.caseOf({
-      just: state =>
-        state.meta.info ? (
-          state.meta.info.artist ?
+    const state = this.props.playState;
+    if (state) {
+      return state.meta.info ? (
+        state.meta.info.artist ?
           `${state.meta.info.artist} - ${state.meta.info.title}` :
           state.meta.info.title
-        ) : 'Unknown Track'
-      ,
-      none: () => null
-    });
+      ) : 'Unknown Track';
+    }
+    return null;
   }
 
   private setNewSource(source: Source) {
@@ -227,7 +213,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     source.addStateListener(this.props.playStateUpdated);
     source.addDisconnectedListener(() => {
       this.setState({source: null});
-      this.props.playStateUpdated(func.none());
+      this.props.playStateUpdated(null);
     });
   }
 
@@ -270,17 +256,16 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   }
 
   private fileAction(action: 'undo' | 'redo' | 'save') {
-    return () => this.props.playState.caseOf({
-      just: state => {
+    return () => {
+      if (this.props.playState) {
         if (this.state.integration)
           this.state.integration.source.sendRequest({
             request: 'file-action',
-            id: state.meta.id,
+            id: this.props.playState.meta.id,
             action
           });
-      },
-      none: () => { /* */ }
-    });
+      }
+    };
   }
 }
 

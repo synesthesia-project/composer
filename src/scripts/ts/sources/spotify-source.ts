@@ -54,13 +54,18 @@ export class SpotifySource extends Source {
     this.api.getMyCurrentPlaybackState().then(state => {
       console.log('Spotify State', state);
       this.playStateUpdated(
-        state.item ? just<PlayStateDataOnly>({
+        state.item ? {
           durationMillis: state.item.duration_ms,
-          state: state.is_playing ?
-            // Spotify does not provide an accurate way to get the effective start
-            // time of the song (it provides timestamp of last play / pause action, and progress)
-            right({effectiveStartTimeMillis: new Date().getTime() - state.progress_ms}) :
-            left({timeMillis: state.progress_ms}),
+          state: !state.is_playing ?
+            {
+              type: 'paused' as 'paused',
+              positionMillis: state.progress_ms
+            } :
+            {
+              type: 'playing' as 'playing',
+              playSpeed: 1,
+              effectiveStartTimeMillis: new Date().getTime() - state.progress_ms
+            },
           meta: {
             id: state.item.id,
             info: {
@@ -68,7 +73,7 @@ export class SpotifySource extends Source {
               title: state.item.name
             }
           }
-        }) : none()
+        } : null
       );
     });
   }
@@ -80,13 +85,8 @@ export class SpotifySource extends Source {
   protected controls() {
     return {
       toggle: () => {
-        const playing = this.getLastState().caseOf({
-          just: state => state.state.caseOf({
-            left: () => false,
-            right: () => true
-          }),
-          none: () => false
-        });
+        const lastState = this.getLastState();
+        const playing = lastState && lastState.state.type === 'playing';
         this.api[playing ? 'pause' : 'play']({}).then(this.update);
         this.update();
       },

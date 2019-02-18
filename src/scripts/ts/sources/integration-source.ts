@@ -90,7 +90,7 @@ export class IntegrationSource extends Source {
         const socket = new WebSocket(this.settings.websocketURL);
         const endpoint = new ComposerEndpoint(
             msg => socket.send(JSON.stringify(msg)),
-            playState => (this.playStateUpdated(fromIntegrationData(playState))),
+            playState => (this.playStateUpdated(playState)),
             (id, cueFile, fileState) => this.cueFileListeners.forEach(l => l(id, cueFile, fileState))
         );
         const connection = this.connection = {socket, endpoint};

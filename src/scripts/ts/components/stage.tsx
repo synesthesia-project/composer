@@ -49,7 +49,7 @@ export class Stage extends React.Component<StageProps, StageState> {
   constructor(props: StageProps) {
     super(props);
     this.state = {
-      playState: func.none(),
+      playState: null,
       cueFile: func.none(),
       selection: selection.initialSelection(),
       state: stageState.initialState(),
@@ -95,7 +95,7 @@ export class Stage extends React.Component<StageProps, StageState> {
     $(window).on('keyup', (e) => {
       // Toggle Play / Pause
       if (e.keyCode === KEYCODES.SPACE) {
-        this.state.playState.fmap(state => state.controls.toggle());
+        if (this.state.playState) this.state.playState.controls.toggle();
         e.preventDefault();
         return;
       }
@@ -142,9 +142,9 @@ export class Stage extends React.Component<StageProps, StageState> {
         const pos = (e.pageX - paddingLeft) / ($(window).width() - paddingLeft);
 
         if (deltaY < 0)
-          this.setState(prevState => ({state: stageState.zoomIn(prevState.state, pos)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomIn(prevState.state, pos)}));
         else
-          this.setState(prevState => ({state: stageState.zoomOut(prevState.state, pos)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomOut(prevState.state, pos)}));
         return;
       }
 
@@ -152,17 +152,17 @@ export class Stage extends React.Component<StageProps, StageState> {
 
       if ((mousePosition === 'layers' || mousePosition === 'timeline')  && deltaY !== 0) {
         if (deltaY < 0)
-          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
         else
-          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
         return;
       }
 
       if (mousePosition === 'layers' && deltaX !== 0) {
         if (deltaX < 0)
-          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
         else
-          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)} as StageState));
+          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
         return;
       }
     });
@@ -185,14 +185,12 @@ export class Stage extends React.Component<StageProps, StageState> {
           },
           none: () => {
             this.state.midiLayerBindings.map(b => {
-              if (b.input === input && b.note === note) {
-                this.state.playState.fmap(state => {
-                  const timestampMillis = this.currentTimestamp(state);
-                  this.state.cueFile.fmap(cueFile => {
-                    this.setState({cueFile: func.just(
-                      fileManipulation.addLayerItem(cueFile, b.layer, timestampMillis)
-                    )});
-                  });
+              if (b.input === input && b.note === note && this.state.playState) {
+                const timestampMillis = this.currentTimestamp(this.state.playState);
+                this.state.cueFile.fmap(cueFile => {
+                  this.setState({cueFile: func.just(
+                    fileManipulation.addLayerItem(cueFile, b.layer, timestampMillis)
+                  )});
                 });
               }
             });
@@ -204,36 +202,35 @@ export class Stage extends React.Component<StageProps, StageState> {
   }
 
   private addItemsToSelectedLayers() {
-    this.state.playState.fmap(state => {
-      const timestampMillis = this.currentTimestamp(state);
-      this.state.cueFile.fmap(cueFile => {
-        for (const i of this.state.selection.layers) {
-          cueFile = fileManipulation.addLayerItem(cueFile, i, timestampMillis);
-        }
-        this.setState({cueFile: func.just(cueFile)} as StageState);
-      });
+    if (!this.state.playState) return;
+    const timestampMillis = this.currentTimestamp(this.state.playState);
+    this.state.cueFile.fmap(cueFile => {
+      for (const i of this.state.selection.layers) {
+        cueFile = fileManipulation.addLayerItem(cueFile, i, timestampMillis);
+      }
+      this.setState({cueFile: func.just(cueFile)});
     });
   }
 
   private currentTimestamp(state: PlayStateData) {
-    return state.state.caseOf({
-      left: pausedState => pausedState.timeMillis,
-      right: playingState => new Date().getTime() - playingState.effectiveStartTimeMillis
-    });
+    return state.state.type === 'paused' ?
+      state.state.positionMillis :
+      new Date().getTime() - state.state.effectiveStartTimeMillis;
   }
 
   private playStateUpdated(playState: PlayState) {
-    this.setState({playState} as StageState);
+    this.setState({playState});
     // If a file is loaded, update the length of the cue file
-    playState.fmap(playState => {
+    if (playState) {
       const cueFile = func.just(this.state.cueFile.caseOf({
         // Create new Cue File
         none: () => file.emptyFile(playState.durationMillis),
         // TODO: add user prompt to confirm if they want to change length of cue file
+        // TODO: remove completely?
         just: existingFile => fileManipulation.setLength(existingFile, playState.durationMillis)
       }));
-      this.setState({cueFile} as StageState);
-    });
+      this.setState({cueFile});
+    }
   }
 
   private fileLoaded(file: file.CueFile): void {
@@ -242,18 +239,18 @@ export class Stage extends React.Component<StageProps, StageState> {
 
   private updateCueFile(mutator: (cueFile: file.CueFile) => file.CueFile) {
     this.state.cueFile.fmap(cueFile => {
-      this.setState({cueFile: func.just(mutator(cueFile))} as StageState);
+      this.setState({cueFile: func.just(mutator(cueFile))});
     });
   }
 
   private updateSelection(mutator: (selection: selection.Selection) => selection.Selection) {
-    this.setState(prevState => ({selection: mutator(prevState.selection)} as StageState));
+    this.setState(prevState => ({selection: mutator(prevState.selection)}));
   }
 
   private updateCueFileAndSelection(mutator: (current: [file.CueFile, selection.Selection]) => [file.CueFile, selection.Selection]) {
     this.state.cueFile.fmap(cueFile => {
       const result = mutator([cueFile, this.state.selection]);
-      this.setState({cueFile: func.just(result[0]), selection: result[1]} as StageState);
+      this.setState({cueFile: func.just(result[0]), selection: result[1]});
     });
   }
 

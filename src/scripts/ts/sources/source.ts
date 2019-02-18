@@ -1,10 +1,9 @@
-import {Maybe, none, Either} from '../data/functional';
 import {PlayStateDataOnly, PlayState, PlayStateData, PlayStateControls, playStateDataEquals} from '../data/play-state';
 
 export abstract class Source {
 
-  private lastState: Maybe<PlayStateDataOnly> = none();
-  private playState: PlayState = none();
+  private lastState: PlayStateDataOnly | null = null;
+  private playState: PlayState = null;
   private playStateListeners: ((state: PlayState) => void)[] = [];
   private disconnectedListeners: (() => void)[] = [];
 
@@ -12,17 +11,17 @@ export abstract class Source {
   protected abstract controls(): PlayStateControls;
   protected abstract disconnect(): void;
 
-  protected playStateUpdated(state: Maybe<PlayStateDataOnly>) {
+  protected playStateUpdated(state: PlayStateDataOnly | null) {
     console.log('playStateUpdated', state);
-    const unchanged = state.equals(this.lastState, playStateDataEquals);
+    const unchanged = playStateDataEquals(state, this.lastState);
     if (unchanged) return;
     this.lastState = state;
-    const playState: PlayState = state.fmap<PlayStateData>(state => ({
+    const playState: PlayState = state ? {
       durationMillis: state.durationMillis,
       state: state.state,
       meta: state.meta,
       controls: this.controls()
-    }));
+    } : null;
     this.playState = playState;
     this.playStateListeners.map(l => l(playState));
   }
@@ -31,7 +30,7 @@ export abstract class Source {
     this.disconnectedListeners.map(l => l());
   }
 
-  protected getLastState(): Maybe<PlayStateDataOnly> {
+  protected getLastState(): PlayStateDataOnly | null {
     return this.lastState;
   }
 

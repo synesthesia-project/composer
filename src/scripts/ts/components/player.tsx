@@ -3,7 +3,7 @@ import {styled, buttonDisabled, rectIconButton} from './styling';
 
 import * as func from '../data/functional';
 import * as stageState from '../data/stage-state';
-import {PlayState, PlayStateData, MediaPlaying} from '../data/play-state';
+import {PlayState, PlayStateData} from '../data/play-state';
 import {displayMillis} from '../display/timing';
 
 import {PlayerBar} from './player-bar';
@@ -53,18 +53,12 @@ class Player extends React.Component<PlayerProps, PlayerState> {
   }
 
   public render() {
-    const playing = this.props.playState.caseOf({
-      just: state => state.state.caseOf({
-        left: () => false,
-        right: () => true
-      }),
-      none: () => false
-    });
-    const disabled = this.props.playState.isNone();
-    const durationText = this.props.playState.caseOf({
-      just: state => displayMillis(state.durationMillis),
-      none: () => NO_TIME_STRING
-    });
+    const state = this.props.playState;
+    const playing = !!state && state.state.type === 'playing';
+    const disabled = !state;
+    const durationText = state && state.state.type === 'playing' ?
+      displayMillis(state.durationMillis) :
+      NO_TIME_STRING;
     const className = this.props.className + (disabled ? ' disabled' : '');
     return (
       <div className={className} ref={div => this.props.playerRef(div)}>
@@ -84,30 +78,31 @@ class Player extends React.Component<PlayerProps, PlayerState> {
   }
 
   private playPauseClicked() {
-    this.props.playState.fmap(state => state.controls.toggle());
+    if (this.props.playState)
+      this.props.playState.controls.toggle();
   }
 
   private updateFromPlayState(playState: PlayState) {
     clearInterval(this.updateInterval);
-    playState.caseOf({
-      just: state => {
-        state.state.caseOf<void>({
-          left: pausedState => this.updateElapsedText(state, pausedState.timeMillis),
-          right: playingState => this.initUpdateInterval(state, playingState)
-        });
-      },
-      none: () => {
-        this.setState({elapsedTimeText: null});
+    if (playState) {
+      if (playState.state.type === 'paused') {
+        this.updateElapsedText(playState, playState.state.positionMillis);
+      } else {
+        this.initUpdateInterval(playState);
       }
-    });
+    } else {
+      this.setState({ elapsedTimeText: null });
+    }
   }
 
-  private initUpdateInterval(playState: PlayStateData, playingState: MediaPlaying) {
+  private initUpdateInterval(playState: PlayStateData) {
     const updater = () => {
+      if (playState.state.type !== 'playing') return;
+      const effectiveStartTimeMillis = playState.state.effectiveStartTimeMillis;
       // Check if scrubbing
       const elapsed = this.state.scrubbingPosition.caseOf({
         just: scrubbingPosition => playState.durationMillis * scrubbingPosition,
-        none: () => new Date().getTime() - playingState.effectiveStartTimeMillis
+        none: () => new Date().getTime() - effectiveStartTimeMillis
       });
       this.updateElapsedText(playState, elapsed);
     };

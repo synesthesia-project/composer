@@ -1,9 +1,8 @@
-import {Maybe, Either, left, right, just, none} from './functional';
+import {isEqual} from 'lodash';
 
-import { PlayStateTrackMeta, PlayStateData as IntegrationPlayStateData } from '../../../integration/shared';
-import { O_NONBLOCK } from 'constants';
+import { PlayStateTrackMeta, PlayStateData as PlayStateDataOnly } from '../../../integration/shared';
 
-export { PlayStateTrackMeta };
+export { PlayStateTrackMeta, PlayStateDataOnly };
 
 export interface PlayStateControls {
   /**
@@ -14,52 +13,17 @@ export interface PlayStateControls {
   goToTime(timeMillis: number): void;
 }
 
-export interface MediaPaused {
-  /** Point in the media where we are paused, in milliseconds */
-  timeMillis: number;
-}
-
-export interface MediaPlaying {
-  /** Effective time when the media started playing, in milliseconds */
-  effectiveStartTimeMillis: number;
-}
-
-export interface PlayStateDataOnly {
-  /** Duration of the media in milliseconds */
-  durationMillis: number;
-  /** Unique identifier for the specific source */
-  meta: PlayStateTrackMeta;
-  // TODO switch to using LayerState from '@synesthesia-project/core/protocols/control/messages';
-  state: Either<MediaPaused, MediaPlaying>;
-}
-
 export interface PlayStateData extends PlayStateDataOnly {
   controls: PlayStateControls;
 }
 
-export type PlayState = Maybe<PlayStateData>;
+export type PlayState = PlayStateData | null;
 
-export function playStateDataEquals(a: PlayStateDataOnly, b: PlayStateDataOnly) {
-  return (
-   a.durationMillis === b.durationMillis &&
-   a.state.equals(
-     b.state,
-     (a, b) => a.timeMillis === b.timeMillis,
-     (a, b) => a.effectiveStartTimeMillis === b.effectiveStartTimeMillis
-   )
- );
+export function playStateDataEquals(a: PlayStateDataOnly | null, b: PlayStateDataOnly | null) {
+  return isEqual(a, b);
 }
 
-export function fromIntegrationData(data: IntegrationPlayStateData | null): Maybe<PlayStateDataOnly> {
-  // TODO: implement playSpeed
-  // TODO: replace type definitions in here with those specified in shared.ts
-  if (!data) return none();
-  const state: Either<MediaPaused, MediaPlaying> = data.state.type === 'playing' ?
-    right({effectiveStartTimeMillis: data.state.effectiveStartTimeMillis}) :
-    left({timeMillis: data.state.positionMillis});
-  return just({
-    durationMillis: data.durationMillis,
-    meta: data.meta,
-    state
-  });
+/** TODO: remove */
+export function fromIntegrationData(data: PlayStateDataOnly | null): PlayStateDataOnly | null {
+  return data;
 }

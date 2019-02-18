@@ -5,7 +5,7 @@ import * as util from '@synesthesia-project/core/util';
 
 import * as func from '../data/functional';
 import * as stageState from '../data/stage-state';
-import {PlayState, PlayStateData, MediaPlaying} from '../data/play-state';
+import {PlayState, PlayStateData} from '../data/play-state';
 
 export interface PlayerBarState {
   /**
@@ -59,7 +59,7 @@ class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
     const className =
       (this.props.className ? this.props.className : '') +
       (this.state.dragging ? ' dragging' : '') +
-      (this.props.playState.isNone() ? ' disabled' : '');
+      (this.props.playState ? '' : ' disabled');
     const fillWidth = (util.restrict(this.state.trackPosition, 0, 1) * 100) + '%';
     const buttonPosition = this.props.scrubbingPosition.caseOf({
       just: scrubbingPosition => scrubbingPosition,
@@ -96,7 +96,7 @@ class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
 
   private onMouseDown(e: React.MouseEvent<HTMLDivElement>) {
     // Only allow dragging if playing
-    if (this.props.playState.isNone())
+    if (!this.props.playState)
       return;
     e.preventDefault();
     this.setState({
@@ -117,9 +117,9 @@ class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
       return;
     e.preventDefault();
     const position = this.calculateBarPosition(e);
-    this.props.playState.fmap(state => {
-      state.controls.goToTime(state.durationMillis * position);
-    });
+    if (this.props.playState) {
+      this.props.playState.controls.goToTime(this.props.playState.durationMillis * position);
+    }
     this.setState({
       dragging: false
     });
@@ -129,26 +129,25 @@ class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
   private updateFromPlayState(playState: PlayState) {
     cancelAnimationFrame(this.updateInterval);
     this.updateInterval = -1;
-    playState.caseOf({
-      just: state => {
-        state.state.caseOf<void>({
-          left: pausedState => this.updateBarPosition(pausedState.timeMillis / state.durationMillis),
-          right: playingState => this.initUpdateInterval(state, playingState)
-        });
-      },
-      none: () => {
-        this.updateBarPosition(0);
+    if (playState) {
+      if (playState.state.type === 'paused') {
+        this.updateBarPosition(playState.state.positionMillis / playState.durationMillis);
+      } else {
+        this.initUpdateInterval(playState);
       }
-    });
+    } else {
+      this.updateBarPosition(0);
+    }
   }
 
-  private initUpdateInterval(playState: PlayStateData, playingState: MediaPlaying) {
+  private initUpdateInterval(playState: PlayStateData) {
     let nextFrame: number;
     const updater = () => {
+      if (playState.state.type !== 'playing') return;
       // HACK: For some reason cancelAnimationFrame() alone isn't working here...
       if (nextFrame !== this.updateInterval) return;
       const now = new Date().getTime();
-      const elapsed = now - playingState.effectiveStartTimeMillis;
+      const elapsed = now - playState.state.effectiveStartTimeMillis;
       this.updateBarPosition(elapsed / playState.durationMillis);
       nextFrame = this.updateInterval = requestAnimationFrame(updater);
     };

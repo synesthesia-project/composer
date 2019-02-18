@@ -63,34 +63,27 @@ class LayersAndTimeline extends React.Component<LayersAndTimelineProps, LayersAn
 
   private updatePositionInterval(newProps: LayersAndTimelineProps) {
     cancelAnimationFrame(this.updateInterval);
-    // Start a re-rendering interval if currently playing
-    newProps.playState.fmap(state => state.state.caseOf<void>({
-      left: pausedState => { /* do-nothing */ },
-      right: playingState => {
+    const playState = newProps.playState;
+    if (playState) {
+      // Start a re-rendering interval if currently playing
+      if (playState.state.type === 'playing') {
         const update = () => {
-          this.updatePosition(newProps);
+          this.updatePosition(playState);
           this.updateInterval = requestAnimationFrame(update);
         };
         this.updateInterval = requestAnimationFrame(update);
       }
-    }));
-    this.updatePosition(newProps);
+      this.updatePosition(playState);
+    }
   }
 
-  private updatePosition(newProps: LayersAndTimelineProps) {
-    newProps.file.fmap(file => {
-      newProps.playState
-        // Extract current time
-        .fmap(state => state.state.caseOf({
-          left: pausedState => pausedState.timeMillis,
-          right: playingState => new Date().getTime() - playingState.effectiveStartTimeMillis
-        }))
+  private updatePosition(playState: playState.PlayStateData) {
+    const time = playState.state.type === 'paused' ?
+      playState.state.positionMillis :
+      new Date().getTime() - playState.state.effectiveStartTimeMillis;
         // Update positionMillis with time if different enough
-        .fmap(time => {
-          if (time < this.state.positionMillis - 10 || time > this.state.positionMillis + 10)
-            this.setState({positionMillis: time});
-        });
-    });
+    if (time < this.state.positionMillis - 10 || time > this.state.positionMillis + 10)
+      this.setState({ positionMillis: time });
   }
 
   private updateMouseHover(mousePosition: func.Maybe<number>) {

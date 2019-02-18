@@ -15,7 +15,7 @@ export class SpotifyLocalSource extends Source {
 
     this.player = new Spotify.Player({
       name: SPOTIFY_PLAYER_NAME,
-      getOAuthToken: cb => { cb(token); }
+      getOAuthToken: (cb: (token: string) => void) => { cb(token); }
     });
 
     // Error handling
@@ -30,13 +30,20 @@ export class SpotifyLocalSource extends Source {
       if (state)
         console.log('orig', time - state.position, time, state.position);
       this.playStateUpdated(
-        (state && state.track_window.current_track) ? just<PlayStateDataOnly>({
+        (state && state.track_window.current_track) ? {
           durationMillis: state.duration,
           state: state.paused ?
-            left({timeMillis: state.position}) :
-            right({effectiveStartTimeMillis: new Date().getTime() - state.position}),
+            {
+              type: 'paused' as 'paused',
+              positionMillis: state.position
+            } :
+            {
+              type: 'playing' as 'playing',
+              playSpeed: 1,
+              effectiveStartTimeMillis: new Date().getTime() - state.position
+            },
           meta: this.metaFromState(state.track_window.current_track)
-        }) : none()
+        } : null
       );
       this.updateTimestamp();
     });
@@ -99,13 +106,8 @@ export class SpotifyLocalSource extends Source {
   protected controls() {
     return {
       toggle: () => {
-        const playing = this.getLastState().caseOf({
-          just: state => state.state.caseOf({
-            left: () => false,
-            right: () => true
-          }),
-          none: () => false
-        });
+        const lastState = this.getLastState();
+        const playing = lastState && lastState.state.type === 'playing';
         playing ? this.player.pause() : this.player.resume();
       },
       pause: () => this.player.pause(),

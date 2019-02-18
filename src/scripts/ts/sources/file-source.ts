@@ -53,16 +53,19 @@ export class FileSource extends Source {
       durationMillis: this.audio.duration * 1000,
       state: (
         this.audio.paused ?
-        left({
-          timeMillis: this.audio.currentTime * 1000
-        }) :
-        right({
+        {
+          type: 'paused',
+          positionMillis: this.audio.currentTime * 1000
+        } :
+        {
+          type: 'playing',
+          playSpeed: 1,
           effectiveStartTimeMillis: new Date().getTime() - this.audio.currentTime * 1000
-        })
+        }
       ),
       meta: this.meta
     };
-    this.playStateUpdated(just(state));
+    this.playStateUpdated(state);
   }
 
   public sourceKind(): 'file' {
