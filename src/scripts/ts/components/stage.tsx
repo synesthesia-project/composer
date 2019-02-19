@@ -13,7 +13,6 @@ import {EventProperties} from './item-properties';
 import {LayerOptionsPopup} from './popups/layer-options-popup';
 
 import * as file from '@synesthesia-project/core/file';
-import * as protocol from '@synesthesia-project/core/protocols/broadcast';
 import * as selection from '../data/selection';
 import * as stageState from '../data/stage-state';
 import * as fileManipulation from '../data/file-manipulation';
@@ -22,14 +21,16 @@ import {KEYCODES} from '../util/input';
 
 import {prepareSpotifySDKListener} from '../external/spotify-sdk';
 
-
 export interface StageProps {
   className?: string;
 }
 
 export interface StageState {
   playState: PlayState;
-  cueFile: func.Maybe<file.CueFile>;
+  cueFile: {
+    id: string;
+    file: file.CueFile;
+  } | null;
   selection: selection.Selection;
   state: stageState.StageState;
   bindingLayer: func.Maybe<number>;
@@ -50,7 +51,7 @@ export class Stage extends React.Component<StageProps, StageState> {
     super(props);
     this.state = {
       playState: null,
-      cueFile: func.none(),
+      cueFile: null,
       selection: selection.initialSelection(),
       state: stageState.initialState(),
       bindingLayer: func.none(),
@@ -187,11 +188,9 @@ export class Stage extends React.Component<StageProps, StageState> {
             this.state.midiLayerBindings.map(b => {
               if (b.input === input && b.note === note && this.state.playState) {
                 const timestampMillis = this.currentTimestamp(this.state.playState);
-                this.state.cueFile.fmap(cueFile => {
-                  this.setState({cueFile: func.just(
-                    fileManipulation.addLayerItem(cueFile, b.layer, timestampMillis)
-                  )});
-                });
+                this.updateCueFile(file =>
+                  fileManipulation.addLayerItem(file, b.layer, timestampMillis)
+                );
               }
             });
           }
@@ -204,11 +203,11 @@ export class Stage extends React.Component<StageProps, StageState> {
   private addItemsToSelectedLayers() {
     if (!this.state.playState) return;
     const timestampMillis = this.currentTimestamp(this.state.playState);
-    this.state.cueFile.fmap(cueFile => {
+    this.updateCueFile(cueFile => {
       for (const i of this.state.selection.layers) {
         cueFile = fileManipulation.addLayerItem(cueFile, i, timestampMillis);
       }
-      this.setState({cueFile: func.just(cueFile)});
+      return cueFile;
     });
   }
 
@@ -220,26 +219,19 @@ export class Stage extends React.Component<StageProps, StageState> {
 
   private playStateUpdated(playState: PlayState) {
     this.setState({playState});
-    // If a file is loaded, update the length of the cue file
-    if (playState) {
-      const cueFile = func.just(this.state.cueFile.caseOf({
-        // Create new Cue File
-        none: () => file.emptyFile(playState.durationMillis),
-        // TODO: add user prompt to confirm if they want to change length of cue file
-        // TODO: remove completely?
-        just: existingFile => fileManipulation.setLength(existingFile, playState.durationMillis)
-      }));
-      this.setState({cueFile});
-    }
   }
 
-  private fileLoaded(file: file.CueFile): void {
-    this.setState({cueFile: func.just(file)});
+  private fileLoaded(id: string, file: file.CueFile): void {
+    this.setState({cueFile: {id, file}});
   }
 
   private updateCueFile(mutator: (cueFile: file.CueFile) => file.CueFile) {
-    this.state.cueFile.fmap(cueFile => {
-      this.setState({cueFile: func.just(mutator(cueFile))});
+    this.setState(prevState => {
+      const state = { cueFile: prevState.cueFile };
+      if (state.cueFile) {
+        state.cueFile = { id: state.cueFile.id, file: mutator(state.cueFile.file) };
+      }
+      return state;
     });
   }
 
@@ -248,9 +240,14 @@ export class Stage extends React.Component<StageProps, StageState> {
   }
 
   private updateCueFileAndSelection(mutator: (current: [file.CueFile, selection.Selection]) => [file.CueFile, selection.Selection]) {
-    this.state.cueFile.fmap(cueFile => {
-      const result = mutator([cueFile, this.state.selection]);
-      this.setState({cueFile: func.just(result[0]), selection: result[1]});
+    this.setState(prevState => {
+      const state = { cueFile: prevState.cueFile, selection: prevState.selection };
+      if (state.cueFile) {
+        const result = mutator([state.cueFile.file, this.state.selection]);
+        state.cueFile = { id: state.cueFile.id, file: result[0] };
+        state.selection = result[1];
+      }
+      return state;
     });
   }
 
@@ -270,6 +267,8 @@ export class Stage extends React.Component<StageProps, StageState> {
     const popup = (this.state.layerOptionsOpen !== null) ?
                   {element: <LayerOptionsPopup />, dismiss: this.closeLayerOptions} :
                   null;
+    const cueFile = (this.state.cueFile && this.state.playState && this.state.cueFile.id === this.state.playState.meta.id) ?
+      func.just(this.state.cueFile.file) : func.none<file.CueFile>();
 
     return (
       <div className={this.props.className}>
@@ -281,7 +280,7 @@ export class Stage extends React.Component<StageProps, StageState> {
           fileLoaded={this.fileLoaded}
           />
         <LayersAndTimeline
-          file={this.state.cueFile}
+          file={cueFile}
           playState={this.state.playState}
           selection={this.state.selection}
           state={this.state.state}
@@ -294,7 +293,7 @@ export class Stage extends React.Component<StageProps, StageState> {
           requestBindingForLayer={this.requestBindingForLayer}
           openLayerOptions={this.openLayerOptions}
           />
-        {this.state.cueFile.caseOf({
+        {cueFile.caseOf({
           just: file => <EventProperties
             file={file}
             selection={this.state.selection}

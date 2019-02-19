@@ -9,7 +9,6 @@ import { IntegrationSettings, FileState } from '../../../integration/shared';
 
 import * as spotifyAuth from '../auth/spotify';
 import {SpotifySdk, spotifyWebPlaybackSDKReady} from '../external/spotify-sdk';
-import * as func from '../data/functional';
 import * as storage from '../util/storage';
 import {PlayState} from '../data/play-state';
 import {Source} from '../sources/source';
@@ -29,11 +28,14 @@ interface Window {
 
 export interface FileSourceProps {
   className?: string;
-  file: func.Maybe<file.CueFile>;
+  file: {
+    id: string;
+    file: file.CueFile;
+  } | null;
   playState: PlayState;
   // Callbacks
   playStateUpdated: (value: PlayState) => void;
-  fileLoaded: (file: file.CueFile) => void;
+  fileLoaded: (id: string, file: file.CueFile) => void;
 }
 
 type Integration = { source: IntegrationSource; fileState: FileState } | null;
@@ -68,7 +70,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       integration.source.addListener('new-cue-file', (id, file, fileState) => {
         const currentId = this.props.playState ? this.props.playState.meta.id : null;
         if (currentId === id) {
-          this.props.fileLoaded(file);
+          this.props.fileLoaded(id, file);
           console.log(fileState);
           this.setState(state => {
             let integration: Integration = null;
@@ -120,36 +122,30 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     const filename = state && state.meta.info ?
       `${state.meta.info.artist} - ${state.meta.info.title}.scue` :
       'song.scue';
-    this.props.file.fmap(file => {
-      storage.saveStringAsFile(JSON.stringify(file), filename);
-    });
+    if (this.props.file) {
+      storage.saveStringAsFile(JSON.stringify(this.props.file), filename);
+    }
   }
 
   public openFile() {
     storage.loadFileAsString().then(fileString => {
+      if (!this.props.playState) return;
       const obj = JSON.parse(fileString);
       const validatedFile = validateFile(obj);
-      this.props.fileLoaded(validatedFile);
+      this.props.fileLoaded(this.props.playState.meta.id, validatedFile);
     });
   }
 
   public componentWillReceiveProps(nextProps: FileSourceProps): void {
-    const trackId = nextProps.playState ? nextProps.playState.meta.id : null;
     if (nextProps.file !== this.props.file &&
         this.state.integration &&
-        !isEqual(this.props.file, nextProps.file) &&
-        trackId) {
+        !isEqual(this.props.file, nextProps.file)) {
       // Time to send new song info to the server, as it's changed
       const nextFile = nextProps.file;
       const integration = this.state.integration;
-      const cueFile = nextFile.caseOf({
-        just: cueFile => cueFile,
-        none: () => this.props.file.caseOf({
-          just: cueFile => cueFile,
-          none: () => file.emptyFile(1000)
-        })
-      });
-      integration.source.sendCueFile(trackId, cueFile);
+      if (nextFile) {
+        integration.source.sendCueFile(nextFile.id, nextFile.file);
+      }
     }
   }
 
@@ -187,7 +183,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
           <button onClick={this.openFile} title="Open"><MdFolderOpen/></button>
-          <button className={this.props.file.isJust() ? '' : 'disabled'} onClick={this.saveFile} title="Save"><MdSave/></button>
+          <button className={this.props.file ? '' : 'disabled'} onClick={this.saveFile} title="Save"><MdSave/></button>
         </div>
       );
     }
