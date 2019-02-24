@@ -99,10 +99,11 @@ class Player extends React.Component<PlayerProps, PlayerState> {
     const updater = () => {
       if (playState.state.type !== 'playing') return;
       const effectiveStartTimeMillis = playState.state.effectiveStartTimeMillis;
+      const playSpeed = playState.state.playSpeed;
       // Check if scrubbing
       const elapsed = this.state.scrubbingPosition.caseOf({
         just: scrubbingPosition => playState.durationMillis * scrubbingPosition,
-        none: () => new Date().getTime() - effectiveStartTimeMillis
+        none: () => (new Date().getTime() - effectiveStartTimeMillis) * playSpeed
       });
       this.updateElapsedText(playState, elapsed);
     };

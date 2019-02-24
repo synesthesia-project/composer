@@ -147,7 +147,7 @@ class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
       // HACK: For some reason cancelAnimationFrame() alone isn't working here...
       if (nextFrame !== this.updateInterval) return;
       const now = new Date().getTime();
-      const elapsed = now - playState.state.effectiveStartTimeMillis;
+      const elapsed = (now - playState.state.effectiveStartTimeMillis) * playState.state.playSpeed;
       this.updateBarPosition(elapsed / playState.durationMillis);
       nextFrame = this.updateInterval = requestAnimationFrame(updater);
     };
