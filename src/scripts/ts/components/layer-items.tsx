@@ -56,7 +56,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
     this.updateHoverState(e);
   }
 
-  private onTimelineSelectorMouseOut(e: React.MouseEvent<HTMLDivElement>) {
+  private onTimelineSelectorMouseOut() {
     this.setState({selector: {state: 'nothing'}});
   }
 
@@ -71,7 +71,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
     this.setState({selector: {state: 'dragging', start, end: start}});
 
     dragging.captureDragging(
-      (x, y) => {
+      (x) => {
         if (!this.timelineSelector) return;
         const end = this.getTimelineSelectorPosition(this.timelineSelector, x);
         this.setState({selector: {
@@ -80,7 +80,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
           end: Math.max(start, end)
         }});
       },
-      (x, y, modifiers) => {
+      (x, _y, modifiers) => {
         if (!this.timelineSelector) return;
         const latestPosition = this.getTimelineSelectorPosition(this.timelineSelector, x);
         // Calculate the items that are within the selection
@@ -96,11 +96,11 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
             return (item.timestampMillis + duration) > startTimestamp && item.timestampMillis < endTimestamp;
           })
           // Map once again to extract the IDs of the events
-          .map((item, i) => item.i);
+          .map((item) => item.i);
         this.props.updateSelection(s => selection.handleItemSelectionChange(s, modifiers, this.props.layerKey, ids));
         this.setState({selector: {state: 'nothing'}});
       },
-      (x, y) => {
+      () => {
         this.setState({selector: {state: 'nothing'}});
       }
     );
@@ -120,7 +120,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
     const initPosition = this.getTimelineSelectorPosition(this.timelineSelector, initX);
     let locked = true;
     dragging.captureDragging(
-      (x, y) => {
+      (x) => {
         // Unlock once dragged enough
         if (locked &&
           (x < initX - dragging.MIN_DRAG_THRESHOLD || x > initX + dragging.MIN_DRAG_THRESHOLD))
@@ -131,7 +131,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
           this.props.updateSelectionDraggingDiff(diffMillis);
         }
       },
-      (x, y, modifiers) => {
+      (x, _y, modifiers) => {
         if (locked) {
           clickOnlyCallback(modifiers);
         } else {
@@ -143,7 +143,7 @@ class LayerItems extends React.Component<LayerItemsProps, LayerItemsState> {
         }
         this.props.updateSelectionDraggingDiff(null);
       },
-      (x, y) => this.props.updateSelectionDraggingDiff(null),
+      () => this.props.updateSelectionDraggingDiff(null),
       'move'
     );
   }

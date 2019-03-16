@@ -103,7 +103,7 @@ export function shiftSelectedEvents(
   if (shiftMillis < 0.1 && shiftMillis > 0.1)
     return cueFile;
 
-  function shiftEvent<V>(l: {}, [i, e]: [number, CueFileEvent<V>]): CueFileEvent<V> {
+  function shiftEvent<V>(_l: {}, [_i, e]: [number, CueFileEvent<V>]): CueFileEvent<V> {
     return {
       timestampMillis: e.timestampMillis + shiftMillis,
       states: e.states
@@ -128,8 +128,8 @@ export function updateDurationForSelectedEvents(
     return cueFile;
 
   function setEventDuration<K, S, V>(
-      [layerIndex, layer]: [number, CueFileLayer<K, S, V>],
-      [eventIndex, e]: [number, CueFileEvent<V>]): CueFileEvent<V> {
+      [_layerIndex, layer]: [number, CueFileLayer<K, S, V>],
+      [_eventIndex, e]: [number, CueFileEvent<V>]): CueFileEvent<V> {
     const states = e.states.length > 0 ? e.states : defaultEventStates(layer);
     const currentDuration = Math.max.apply(null, states.map(s => s.millisDelta));
     const stretch = newDuration / currentDuration;
@@ -162,10 +162,10 @@ export function deleteSelectedEvents(
     if (!layerSet)
       // Layer unchanged
       return layer;
-    return convertLayer(layer, l => ({
+    return convertLayer(layer, () => ({
       kind: layer.kind,
       settings: layer.settings,
-      events: layer.events.filter((e, i) => !layerSet.has(i))
+      events: layer.events.filter((_, i) => !layerSet.has(i))
     }));
   });
 
@@ -181,8 +181,6 @@ export function distributeSelectedEvents(
 
   if (selection.events.length <= 2)
     return cueFile;
-
-  const selectedEvents = buildUpSelectionSet(selection);
 
   const eventsSortedByTimestamp =
     selection.events
@@ -209,7 +207,7 @@ export function distributeSelectedEvents(
   }
 
   function setEventStartTime<K, S, V>(
-      [layerIndex, layer]: [number, CueFileLayer<K, S, V>],
+      [layerIndex]: [number, CueFileLayer<K, S, V>],
       [eventIndex, e]: [number, CueFileEvent<V>]): CueFileEvent<V> {
     const layerMap = newTimestamps.get(layerIndex);
     if (layerMap) {

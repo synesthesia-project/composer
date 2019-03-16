@@ -15,7 +15,7 @@ class Overlays extends React.Component<OverlaysProps, {}> implements OverlaysMan
     setOverlaysManager(this);
   }
 
-  public requestInput(title: string, message: string, label: string, defaultValue: string) {
+  public requestInput(_title: string, message: string, _label: string, defaultValue: string) {
     return new Promise<string> ((resolve, reject) => {
       const result = prompt(message, defaultValue);
       if (result)

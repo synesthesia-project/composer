@@ -27,7 +27,7 @@ export interface PlayerBarProps {
 
 class PlayerBar extends React.Component<PlayerBarProps, PlayerBarState> {
 
-  private updateInterval: number;
+  private updateInterval = -1;
 
   // Elements
   private barRef: HTMLDivElement | null = null;

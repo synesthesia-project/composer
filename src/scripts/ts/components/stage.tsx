@@ -172,7 +172,7 @@ export class Stage extends React.Component<StageProps, StageState> {
   private setupMIDIListeners() {
     this.midi.addListener({
       inputRemoved: input => console.debug('inputRemoved', input),
-      noteOn: (input, note, velocity) => {
+      noteOn: (input, note, _velocity) => {
         this.state.bindingLayer.caseOf({
           just: layerKey => {
             // Bind this note to that layer

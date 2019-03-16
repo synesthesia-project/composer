@@ -3,7 +3,6 @@ import universalParse from 'id3-parser/lib/universal';
 import {Source} from './source';
 
 import {PlayStateDataOnly, PlayStateTrackMeta} from '../data/play-state';
-import {just, none, left, right} from '../data/functional';
 
 export class FileSource extends Source {
 

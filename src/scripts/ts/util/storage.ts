@@ -20,10 +20,10 @@ export function loadFileAsString() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = '.scue';
-    input.onchange = e => {
+    input.onchange = () => {
       if (!input.files || input.files.length === 0) return;
       const reader = new FileReader();
-      reader.onload = () => resolve(reader.result);
+      reader.onload = () => resolve(reader.result ? reader.result.toString() : '');
       reader.readAsText(input.files[0]);
     };
     input.click();

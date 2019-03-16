@@ -97,7 +97,7 @@ class Timeline extends React.Component<TimelineProps, TimelineState> {
     this.props.updateMouseHover(func.just(this.getMousePosition(e)));
   }
 
-  private mouseLeave(e: React.MouseEvent<{}>) {
+  private mouseLeave(_e: React.MouseEvent<{}>) {
     this.props.updateMouseHover(func.none());
   }
 

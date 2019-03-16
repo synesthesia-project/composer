@@ -31,7 +31,7 @@ class None<T> extends Maybe<T> {
     return cases.none();
   }
 
-  public fmap<Output>(map: (value: T) => Output): Maybe<Output> {
+  public fmap<Output>(): Maybe<Output> {
     return none<Output>();
   }
 }

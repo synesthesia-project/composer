@@ -1,6 +1,5 @@
 import {Source} from './source';
-import {PlayStateDataOnly, PlayStateTrackMeta} from '../data/play-state';
-import {just, none, left, right} from '../data/functional';
+import {PlayStateTrackMeta} from '../data/play-state';
 
 import {SpotifySdk} from '../external/spotify-sdk';
 

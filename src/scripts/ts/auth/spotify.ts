@@ -40,7 +40,7 @@ function authURL() {
   );
 }
 
-export function authSpotify(selectTab: boolean): Promise<string> {
+export function authSpotify(): Promise<string> {
   return new Promise((resolve, reject) => {
     const storageChangedListener = (event: StorageEvent) => {
       if (event.key !== SPOTIFY_AUTH_STORAGE_KEY || !event.newValue) return;

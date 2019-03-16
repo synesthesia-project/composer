@@ -20,10 +20,10 @@ export interface VisualisedState {
 class LayerVisualization extends React.Component<LayerVisualizationProps, {}> {
 
   /** The current layer that we have processed */
-  private currentLayer: file.AnyLayer;
+  private currentLayer: file.AnyLayer | null = null;
 
   /** The normalized layer event data */
-  private processedLayerEvents: file.CueFileEvent<VisualisedState>[];
+  private processedLayerEvents: file.CueFileEvent<VisualisedState>[] | null = null;
 
   constructor(props: LayerVisualizationProps) {
     super(props);
@@ -34,7 +34,7 @@ class LayerVisualization extends React.Component<LayerVisualizationProps, {}> {
       this.currentLayer = this.props.layer;
       this.processedLayerEvents = file.switchLayer(this.currentLayer, {
         percussion: this.processPercussionLayerEvents,
-        tones: layer => []
+        tones: _layer => []
       });
       console.debug('processed', this.currentLayer, this.processedLayerEvents);
     }
@@ -67,6 +67,7 @@ class LayerVisualization extends React.Component<LayerVisualizationProps, {}> {
    * Return the events that are active for the current timestamp
    */
   private getCurrentEvents(): file.CueFileEvent<VisualisedState>[] {
+    if (!this.processedLayerEvents) return [];
     return getActiveEvents(this.processedLayerEvents, this.props.positionMillis);
   }
 

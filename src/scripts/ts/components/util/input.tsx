@@ -17,7 +17,7 @@ export class DelayedPropigationInput extends React.Component<PropertyInputProper
   /* True when propigating the result of a user-triggered event upwards */
   private changing = false;
 
-  private ref: HTMLInputElement | null;
+  private ref: HTMLInputElement | null = null;
 
   public constructor(props: PropertyInputProperties) {
     super(props);

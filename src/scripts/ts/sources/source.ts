@@ -1,4 +1,4 @@
-import {PlayStateDataOnly, PlayState, PlayStateData, PlayStateControls, playStateDataEquals} from '../data/play-state';
+import {PlayStateDataOnly, PlayState, PlayStateControls, playStateDataEquals} from '../data/play-state';
 
 export abstract class Source {
 

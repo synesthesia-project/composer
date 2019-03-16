@@ -123,7 +123,7 @@ const layerBarHeightPx = 60;
 const StyledLayer = styled(Layer)`
   box-sizing: border-box;
   display: block;
-  height:  ${p => layerBarHeightPx}px;
+  height:  ${layerBarHeightPx}px;
   border-bottom: 1px solid ${p => p.theme.borderLight};
   position: relative;
 

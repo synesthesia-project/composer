@@ -223,7 +223,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     if (this.state.source && this.state.source.sourceKind() === 'spotify') {
       this.state.source.dispose();
     } else {
-      spotifyAuth.authSpotify(true).then(
+      spotifyAuth.authSpotify().then(
         token => {
           this.setNewSource(new SpotifySource(token));
         },
@@ -239,7 +239,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     if (this.state.source && this.state.source.sourceKind() === 'spotify-local') {
       this.state.source.dispose();
     } else {
-      spotifyAuth.authSpotify(true).then(
+      spotifyAuth.authSpotify().then(
         token => {
           if (this.state.spotifyWebPlaybackSDK === null) return;
           this.setNewSource(new SpotifyLocalSource(this.state.spotifyWebPlaybackSDK, token));

@@ -1,8 +1,6 @@
 import * as Spotify from 'spotify-web-api-js';
 
 import {Source} from './source';
-import {PlayStateDataOnly} from '../data/play-state';
-import {just, none, left, right} from '../data/functional';
 
 const UPDATE_INTERVAL_MS = 2000;
 

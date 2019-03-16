@@ -40,7 +40,7 @@ export interface LayersAndTimelineState {
 
 class LayersAndTimeline extends React.Component<LayersAndTimelineProps, LayersAndTimelineState> {
 
-  private updateInterval: number;
+  private updateInterval = -1;
 
   constructor(props: LayersAndTimelineProps) {
     super(props);

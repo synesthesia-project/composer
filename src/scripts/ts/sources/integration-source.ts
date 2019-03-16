@@ -3,7 +3,7 @@ import { Endpoint } from '@synesthesia-project/core/protocols/util/endpoint';
 
 import { IntegrationSettings, PlayStateData, FileState, Request, Response, Notification, IntegrationMessage }
     from '../../../integration/shared';
-import { PlayStateControls, fromIntegrationData } from '../data/play-state';
+import { PlayStateControls } from '../data/play-state';
 
 import { Source } from './source';
 
@@ -21,8 +21,8 @@ export class ComposerEndpoint extends Endpoint<Request, Response, Notification> 
         this.cueFileUpdated = cueFileUpdated;
     }
 
-    protected handleRequest(request: never): Promise<never> {
-        return new Promise((resolve, reject) => {
+    protected handleRequest(_request: never): Promise<never> {
+        return new Promise((_resolve, reject) => {
             reject(new Error('unknown request type'));
         });
     }
