@@ -118,55 +118,58 @@ export class Stage extends React.Component<StageProps, StageState> {
       console.debug('keyup', e, e.keyCode);
     });
 
-    $(window).on('wheel', e => {
-      // Prevent all default mouse wheel behaviour
-      e.preventDefault();
+    window.addEventListener(
+      'wheel',
+      e => {
+        // Prevent all default mouse wheel behaviour
+        e.preventDefault();
 
-      // Don't do any zoom behaviour if any required component
-      if (!this.timeline || !this.player || !this.layers)
-        return;
+        // Don't do any zoom behaviour if any required component
+        if (!this.timeline || !this.player || !this.layers)
+          return;
 
-      // Work out where the mouse is currently positioned
-      const paddingLeft = 100; // width of the side bar
-      const mousePosition =
-        e.pageY > $(this.player).offset().top ? 'player' :
-        e.pageX > paddingLeft && e.pageY > $(this.timeline).offset().top ? 'timeline' :
-        e.pageX > paddingLeft && e.pageY > $(this.layers).offset().top ? 'layers' : 'none';
+        // Work out where the mouse is currently positioned
+        const paddingLeft = 100; // width of the side bar
+        const mousePosition =
+          e.pageY > $(this.player).offset().top ? 'player' :
+          e.pageX > paddingLeft && e.pageY > $(this.timeline).offset().top ? 'timeline' :
+          e.pageX > paddingLeft && e.pageY > $(this.layers).offset().top ? 'layers' : 'none';
 
-      const deltaY = (e.originalEvent as WheelEvent).deltaY;
-      const deltaX = (e.originalEvent as WheelEvent).deltaX;
+        const deltaY = e.deltaY;
+        const deltaX = e.deltaX;
 
-      // Handle zooming in + out
+        // Handle zooming in + out
 
-      if ((mousePosition === 'layers' || mousePosition === 'timeline') && e.ctrlKey && deltaY !== 0) {
-        // Work out position of mouse on stage for zoom origin
-        const pos = (e.pageX - paddingLeft) / ($(window).width() - paddingLeft);
+        if ((mousePosition === 'layers' || mousePosition === 'timeline') && e.ctrlKey && deltaY !== 0) {
+          // Work out position of mouse on stage for zoom origin
+          const pos = (e.pageX - paddingLeft) / ($(window).width() - paddingLeft);
 
-        if (deltaY < 0)
-          this.setState(prevState => ({state: stageState.zoomIn(prevState.state, pos)}));
-        else
-          this.setState(prevState => ({state: stageState.zoomOut(prevState.state, pos)}));
-        return;
-      }
+          if (deltaY < 0)
+            this.setState(prevState => ({state: stageState.zoomIn(prevState.state, pos)}));
+          else
+            this.setState(prevState => ({state: stageState.zoomOut(prevState.state, pos)}));
+          return;
+        }
 
-      // Handle horizontal scrolling
+        // Handle horizontal scrolling
 
-      if ((mousePosition === 'layers' || mousePosition === 'timeline')  && deltaY !== 0) {
-        if (deltaY < 0)
-          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
-        else
-          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
-        return;
-      }
+        if ((mousePosition === 'layers' || mousePosition === 'timeline')  && deltaY !== 0) {
+          if (deltaY < 0)
+            this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
+          else
+            this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
+          return;
+        }
 
-      if (mousePosition === 'layers' && deltaX !== 0) {
-        if (deltaX < 0)
-          this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
-        else
-          this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
-        return;
-      }
-    });
+        if (mousePosition === 'layers' && deltaX !== 0) {
+          if (deltaX < 0)
+            this.setState(prevState => ({state: stageState.zoomMoveLeft(prevState.state)}));
+          else
+            this.setState(prevState => ({state: stageState.zoomMoveRight(prevState.state)}));
+          return;
+        }
+      },
+      {passive: false});
   }
 
   private setupMIDIListeners() {
