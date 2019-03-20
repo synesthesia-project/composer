@@ -43,7 +43,6 @@ type Integration = { source: IntegrationSource; fileState: FileState } | null;
 interface FileSourceState {
   integration: Integration;
   source: Source | null;
-  companionAllowed: boolean;
   spotifyWebPlaybackSDK: SpotifySdk | null;
 }
 
@@ -93,7 +92,6 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     this.state = {
       integration,
       source: null,
-      companionAllowed: true,
       spotifyWebPlaybackSDK: null
     };
 
