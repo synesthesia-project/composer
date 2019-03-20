@@ -18,7 +18,7 @@ import {SpotifySource} from '../sources/spotify-source';
 import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
 
-import {MdSave, MdFolderOpen, MdUndo, MdRedo} from 'react-icons/md';
+import {MdSave, MdFolderOpen, MdUndo, MdRedo, MdCloudDownload, MdCloudUpload} from 'react-icons/md';
 
 import { IntegrationButton } from './integration-button';
 
@@ -155,6 +155,8 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
           <IntegrationButton integration={this.state.integration.source} settings={this.state.integration.source.getSettings()} />
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
+          <button className={this.props.file ? '' : 'disabled'} onClick={this.openFile} title="Upload"><MdCloudUpload/></button>
+          <button className={this.props.file ? '' : 'disabled'} onClick={this.saveFile} title="Download"><MdCloudDownload/></button>
           <button className={this.state.integration.fileState.canUndo ? '' : 'disabled'} onClick={this.undo} title="Undo"><MdUndo/></button>
           <button className={this.state.integration.fileState.canRedo ? '' : 'disabled'} onClick={this.redo} title="Redo"><MdRedo/></button>
           <button className={this.state.integration.fileState.canSave ? '' : 'disabled'} onClick={this.save} title="Save"><MdSave/></button>
