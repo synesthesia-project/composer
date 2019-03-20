@@ -121,7 +121,8 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       `${state.meta.info.artist} - ${state.meta.info.title}.scue` :
       'song.scue';
     if (this.props.file) {
-      storage.saveStringAsFile(JSON.stringify(this.props.file), filename);
+      const file: file.CueFile = this.props.file.file;
+      storage.saveStringAsFile(JSON.stringify(file), filename);
     }
   }
 
