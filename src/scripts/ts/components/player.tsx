@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {styled, buttonDisabled, rectIconButton} from './styling';
+import {styled, buttonDisabled, rectIconButton, rectButtonSmall, textInput} from './styling';
 
 import * as func from '../data/functional';
 import * as stageState from '../data/stage-state';
@@ -7,10 +7,14 @@ import {PlayState, PlayStateData} from '../data/play-state';
 import {displayMillis} from '../display/timing';
 
 import {PlayerBar} from './player-bar';
+import {DropDownButton} from './util/drop-down-button';
+import {DelayedPropigationInput} from './util/input';
 
-import {MdPlayArrow, MdPause} from 'react-icons/md';
+import {MdPlayArrow, MdPause, MdSlowMotionVideo} from 'react-icons/md';
 
 const NO_TIME_STRING = '---';
+const CONTROL_HEIGHT_PX = 30;
+const CONTROL_HEIGHT = CONTROL_HEIGHT_PX + 'px';
 
 interface PlayerState {
   /**
@@ -19,6 +23,7 @@ interface PlayerState {
    */
   scrubbingPosition: func.Maybe<number>;
   elapsedTimeText: string | null;
+  playSpeed: number;
 }
 
 interface PlayerProps {
@@ -38,18 +43,37 @@ class Player extends React.Component<PlayerProps, PlayerState> {
     super(props);
     this.state = {
       scrubbingPosition: func.none(),
-      elapsedTimeText: null
+      elapsedTimeText: null,
+      playSpeed: 1
     };
 
     // Bind callbacks & event listeners
     this.playPauseClicked = this.playPauseClicked.bind(this);
     this.updateScrubbingPosition = this.updateScrubbingPosition.bind(this);
+    this.setPlaySpeed = this.setPlaySpeed.bind(this);
+    this.setPlaySpeed1 = this.setPlaySpeed1.bind(this);
+    this.setPlaySpeedHalf = this.setPlaySpeedHalf.bind(this);
   }
 
   public componentWillReceiveProps(nextProps: PlayerProps) {
     // Only call updateFromPlayState if playState has changed
     if (this.props.playState !== nextProps.playState)
       this.updateFromPlayState(nextProps.playState);
+  }
+
+  private setPlaySpeed(value: string) {
+    console.log('setPlaySpeed', value);
+    const playSpeed = parseFloat(value);
+    if (isNaN(playSpeed)) return;
+    this.setState({playSpeed});
+  }
+
+  private setPlaySpeed1() {
+    this.setPlaySpeed('1');
+  }
+
+  private setPlaySpeedHalf() {
+    this.setPlaySpeed('0.5');
   }
 
   public render() {
@@ -60,11 +84,27 @@ class Player extends React.Component<PlayerProps, PlayerState> {
       displayMillis(state.durationMillis) :
       NO_TIME_STRING;
     const className = this.props.className + (disabled ? ' disabled' : '');
+    const playSpeed = this.state.playSpeed;
     return (
       <div className={className} ref={div => this.props.playerRef(div)}>
         <span className="play-pause" onClick={this.playPauseClicked}>
           { playing ? <MdPause /> : <MdPlayArrow /> }
         </span>
+        <DropDownButton
+          icon={MdSlowMotionVideo}
+          buttonSizePx={CONTROL_HEIGHT_PX}
+          title="Play speed"
+          buttonText = {playSpeed === 1 ? '' : (playSpeed + 'x')}
+          active={playSpeed !== 1}
+          disabled={disabled}
+          >
+          <div className="speed-controls">
+            <span>Play Speed:</span>
+            <button onClick={this.setPlaySpeed1}>1x</button>
+            <button onClick={this.setPlaySpeedHalf}>0.5x</button>
+            <DelayedPropigationInput type="number" value={playSpeed.toString()} onChange={this.setPlaySpeed } />
+          </div>
+        </DropDownButton>
         <span className="elapsed-time">{this.state.elapsedTimeText ? this.state.elapsedTimeText : NO_TIME_STRING}</span>
         <PlayerBar
           playState={this.props.playState}
@@ -131,8 +171,6 @@ class Player extends React.Component<PlayerProps, PlayerState> {
 
 }
 
-const controlHeight = '30px';
-
 const StyledPlayer = styled(Player)`
   background-color: ${p => p.theme.bgLight1};
   border-top: 1px solid ${p => p.theme.borderDark};
@@ -144,9 +182,35 @@ const StyledPlayer = styled(Player)`
 
   > .play-pause {
     display: block;
-    height: ${controlHeight};
-    width: ${controlHeight};
+    height: ${CONTROL_HEIGHT};
+    width: ${CONTROL_HEIGHT};
     ${rectIconButton}
+    margin-right: ${p => p.theme.spacingPx}px;
+  }
+
+  .speed-controls {
+    display: flex;
+    align-items: center;
+
+    > * {
+      margin: ${p => p.theme.spacingPx / 2}px;
+    }
+
+    > span {
+      font-size: 12px;
+      height: 12px;
+      white-space: nowrap;
+    }
+
+    > input {
+      width: 30px;
+      ${textInput}
+    }
+
+    > button {
+      outline: none;
+      ${rectButtonSmall}
+    }
   }
 
   > .elapsed-time, > .duration {

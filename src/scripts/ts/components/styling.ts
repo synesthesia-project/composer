@@ -64,6 +64,24 @@ export { styled, css, injectGlobal, keyframes, ThemeProvider };
 
 // Mixins and helper functions
 
+export const textInput = css`
+  border: 1px solid ${p => p.theme.borderLight};
+  background: ${p => p.theme.bgDark1};
+  border-radius: 3px;
+  color: rgba(255, 255, 255, 0.7);
+  outline: none;
+  padding: 2px 4px;
+
+  &:focus {
+    border-color: #505050;
+  }
+
+  &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+`;
+
 const buttonStateNormal = css`
   color: ${p => p.theme.buttonTextNormal};
   background: linear-gradient(to bottom, #4f5053, #343436);
@@ -117,7 +135,7 @@ const button = css`
   border-radius: 3px;
   border: 1px solid ${p => p.theme.borderDark};
   overflow: hidden;
-  font-size: 16px;
+  font-size: 15px;
   display: flex;
   justify-content: center;
   align-items: center;

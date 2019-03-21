@@ -1,4 +1,4 @@
-import {styled, rectButtonSmall, buttonDisabled} from './styling';
+import {styled, rectButtonSmall, buttonDisabled, textInput} from './styling';
 import * as React from 'react';
 import * as file from '@synesthesia-project/core/file';
 import * as selection from '../data/selection';
@@ -167,24 +167,10 @@ const StyledEventProperties = styled(EventProperties)`
       }
 
       input {
-        border: 1px solid ${p => p.theme.borderLight};
-        background: ${p => p.theme.bgDark1};
-        border-radius: 3px;
-        color: rgba(255, 255, 255, 0.7);
-        outline: none;
-        padding: 2px 4px;
+        ${textInput}
 
         &[type=number] {
           width: 60px;
-        }
-
-        &:focus {
-          border-color: #505050;
-        }
-
-        &::-webkit-outer-spin-button, &::-webkit-inner-spin-button {
-          -webkit-appearance: none;
-          margin: 0;
         }
       }
 
