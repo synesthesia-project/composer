@@ -17,6 +17,7 @@ import { IntegrationSource } from '../sources/integration-source';
 import {SpotifySource} from '../sources/spotify-source';
 import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
+import { FileController, FileControllerState } from './util/file-controller';
 
 import {MdSave, MdFolderOpen, MdUndo, MdRedo, MdCloudDownload, MdCloudUpload} from 'react-icons/md';
 
@@ -43,6 +44,7 @@ type Integration = { source: IntegrationSource; fileState: FileState } | null;
 interface FileSourceState {
   integration: Integration;
   source: Source | null;
+  fileControllerState: FileControllerState;
   spotifyWebPlaybackSDK: SpotifySdk | null;
 }
 
@@ -51,6 +53,10 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   private readonly undo: () => void;
   private readonly redo: () => void;
   private readonly save: () => void;
+
+  private readonly localFileController: FileController = new FileController(
+    fileControllerState => this.setState({fileControllerState})
+  );
 
   constructor(props: FileSourceProps) {
     super(props);
@@ -92,11 +98,13 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     this.state = {
       integration,
       source: null,
-      spotifyWebPlaybackSDK: null
+      spotifyWebPlaybackSDK: null,
+      fileControllerState: {state: 'inactive'}
     };
 
     // Bind callbacks & event listeners
     this.loadAudioFile = this.loadAudioFile.bind(this);
+    this.loadAudioFileAsController = this.loadAudioFileAsController.bind(this);
     this.toggleSpotify = this.toggleSpotify.bind(this);
     this.toggleSpotifyLocal = this.toggleSpotifyLocal.bind(this);
     this.saveFile = this.saveFile.bind(this);
@@ -154,6 +162,13 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       return (
         <div className={this.props.className}>
           <IntegrationButton integration={this.state.integration.source} settings={this.state.integration.source.getSettings()} />
+          <input id="file_picker" type="file" onChange={this.loadAudioFileAsController} />
+          <label
+            htmlFor="file_picker"
+            title="Open Audio File"
+            className={this.state.fileControllerState.state === 'active' ? 'active' : ''}>
+            <MdFolderOpen/>
+          </label>
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
           <button className={this.props.file ? '' : 'disabled'} onClick={this.openFile} title="Upload"><MdCloudUpload/></button>
@@ -167,7 +182,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       return (
         <div className={this.props.className}>
           <input id="file_picker" type="file" onChange={this.loadAudioFile} />
-          <label htmlFor="file_picker"><MdFolderOpen/> Open Audio File</label>
+          <label htmlFor="file_picker"><MdFolderOpen/><span>Open Audio File</span></label>
           <button className={source === 'spotify' ? ' pressed' : ''} onClick={this.toggleSpotify}>
             <SpotifyIcon /> Connect To Remote
           </button>
@@ -212,6 +227,11 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
       this.setState({source: null});
       this.props.playStateUpdated(null);
     });
+  }
+
+  private loadAudioFileAsController(ev: React.ChangeEvent<HTMLInputElement>) {
+    this.localFileController.loadFile(ev.target);
+    ev.target.value = '';
   }
 
   private loadAudioFile(ev: React.ChangeEvent<HTMLInputElement>) {
@@ -290,8 +310,14 @@ const StyledToolbar = styled(Toolbar)`
       margin: ${p => p.theme.spacingPx / 2}px;
       ${rectButton}
 
-      > svg {
-        margin-right: 5px;
+      > span {
+        margin-left: 5px;
+      }
+
+      &.active {
+        > svg {
+          color: ${p => p.theme.hint};
+        }
       }
     }
   }
