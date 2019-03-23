@@ -123,6 +123,7 @@ export class IntegrationSource extends Source {
             toggle: () => this.sendRequest({request: 'toggle'}),
             pause: () => this.sendRequest({request: 'pause'}),
             goToTime: (positionMillis: number) => this.sendRequest({request: 'go-to-time', positionMillis}),
+            setPlaySpeed: (playSpeed: number) => this.sendRequest({request: 'play-speed', playSpeed}),
         };
     }
 

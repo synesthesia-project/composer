@@ -11,6 +11,7 @@ export interface PlayStateControls {
   toggle(): void;
   pause(): void;
   goToTime(timeMillis: number): void;
+  setPlaySpeed(playSpeed: number): void;
 }
 
 export interface PlayStateData extends PlayStateDataOnly {

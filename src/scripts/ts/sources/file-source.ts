@@ -58,7 +58,7 @@ export class FileSource extends Source {
         } :
         {
           type: 'playing',
-          playSpeed: 1,
+          playSpeed: this.audio.playbackRate,
           effectiveStartTimeMillis: new Date().getTime() - this.audio.currentTime * 1000
         }
       ),
@@ -91,6 +91,10 @@ export class FileSource extends Source {
       ,
       goToTime: (timeMillis: number) => {
         this.audio.currentTime = timeMillis / 1000;
+      },
+      setPlaySpeed: (playSpeed: number) => {
+        this.audio.playbackRate = playSpeed;
+        this.updatePlayState();
       }
     };
   }

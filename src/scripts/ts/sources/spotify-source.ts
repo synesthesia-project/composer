@@ -90,7 +90,8 @@ export class SpotifySource extends Source {
       },
       pause: () => this.api.pause({}).then(this.update),
       goToTime: (positionMs: number) =>
-        this.api.seek(Math.round(positionMs), {}).then(this.update)
+        this.api.seek(Math.round(positionMs), {}).then(this.update),
+      setPlaySpeed: () => console.log('play speed not supported in spotify-source')
     };
   }
 

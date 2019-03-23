@@ -23,7 +23,6 @@ interface PlayerState {
    */
   scrubbingPosition: func.Maybe<number>;
   elapsedTimeText: string | null;
-  playSpeed: number;
 }
 
 interface PlayerProps {
@@ -43,8 +42,7 @@ class Player extends React.Component<PlayerProps, PlayerState> {
     super(props);
     this.state = {
       scrubbingPosition: func.none(),
-      elapsedTimeText: null,
-      playSpeed: 1
+      elapsedTimeText: null
     };
 
     // Bind callbacks & event listeners
@@ -64,8 +62,8 @@ class Player extends React.Component<PlayerProps, PlayerState> {
   private setPlaySpeed(value: string) {
     console.log('setPlaySpeed', value);
     const playSpeed = parseFloat(value);
-    if (isNaN(playSpeed)) return;
-    this.setState({playSpeed});
+    if (isNaN(playSpeed) || !this.props.playState) return;
+    this.props.playState.controls.setPlaySpeed(playSpeed);
   }
 
   private setPlaySpeed1() {
@@ -84,7 +82,7 @@ class Player extends React.Component<PlayerProps, PlayerState> {
       displayMillis(state.durationMillis) :
       NO_TIME_STRING;
     const className = this.props.className + (disabled ? ' disabled' : '');
-    const playSpeed = this.state.playSpeed;
+    const playSpeed = state && state.state.type === 'playing' ? state.state.playSpeed : 1;
     return (
       <div className={className} ref={div => this.props.playerRef(div)}>
         <span className="play-pause" onClick={this.playPauseClicked}>

@@ -111,7 +111,8 @@ export class SpotifyLocalSource extends Source {
       },
       pause: () => this.player.pause(),
       goToTime: (positionMs: number) =>
-        this.player.seek(Math.round(positionMs))
+        this.player.seek(Math.round(positionMs)),
+      setPlaySpeed: () => console.log('play speed not supported in spotify-local-source')
     };
   }
 }
