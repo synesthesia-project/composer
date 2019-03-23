@@ -19,7 +19,7 @@ import {SpotifyLocalSource} from '../sources/spotify-local-source';
 import {SpotifyIcon} from './icons/spotify';
 import { FileController, FileControllerState } from './util/file-controller';
 
-import {MdSave, MdFolderOpen, MdUndo, MdRedo, MdCloudDownload, MdCloudUpload} from 'react-icons/md';
+import {MdSave, MdFolderOpen, MdUndo, MdRedo, MdCloudDownload, MdCloudUpload, MdClose} from 'react-icons/md';
 
 import { IntegrationButton } from './integration-button';
 
@@ -105,6 +105,7 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
     // Bind callbacks & event listeners
     this.loadAudioFile = this.loadAudioFile.bind(this);
     this.loadAudioFileAsController = this.loadAudioFileAsController.bind(this);
+    this.unloadLocalFileController = this.unloadLocalFileController.bind(this);
     this.toggleSpotify = this.toggleSpotify.bind(this);
     this.toggleSpotifyLocal = this.toggleSpotifyLocal.bind(this);
     this.saveFile = this.saveFile.bind(this);
@@ -169,6 +170,9 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
             className={this.state.fileControllerState.state === 'active' ? 'active' : ''}>
             <MdFolderOpen/>
           </label>
+          {this.state.fileControllerState.state === 'active' ? (
+            <button onClick={this.unloadLocalFileController} title="Close"><MdClose/></button>
+          ) : null}
           <span className="description">{this.getTrackDescription()}</span>
           <span className="grow"/>
           <button className={this.props.file ? '' : 'disabled'} onClick={this.openFile} title="Upload"><MdCloudUpload/></button>
@@ -232,6 +236,10 @@ class Toolbar extends React.Component<FileSourceProps, FileSourceState> {
   private loadAudioFileAsController(ev: React.ChangeEvent<HTMLInputElement>) {
     this.localFileController.loadFile(ev.target);
     ev.target.value = '';
+  }
+
+  private unloadLocalFileController() {
+    this.localFileController.unload();
   }
 
   private loadAudioFile(ev: React.ChangeEvent<HTMLInputElement>) {

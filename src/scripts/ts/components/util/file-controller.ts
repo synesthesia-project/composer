@@ -69,6 +69,14 @@ export class FileController {
     }
   }
 
+  public unload() {
+    this.audio.removeAttribute('src');
+    this.getEndpoint().then(endpoint => {
+      endpoint.sendState({layers: []});
+    });
+    this.updateListener();
+  }
+
   private getEndpoint(): Promise<ControllerEndpoint> {
     if (!this.endpoint) {
       const endpointPromise = this.endpoint = new Promise((resolve, reject) => {
@@ -121,6 +129,7 @@ export class FileController {
 
   private updateListener() {
     if (this.audio.src) {
+      console.log(this.audio.src);
       this.listener({state: 'active', volume: this.audio.volume});
     } else {
       this.listener({state: 'inactive'});
@@ -128,7 +137,6 @@ export class FileController {
   }
 
   private updatePlayState() {
-    console.log(this.meta);
     this.getEndpoint().then(endpoint => {
       if (!this.meta || !this.audio) return;
       endpoint.sendState({layers: [{
