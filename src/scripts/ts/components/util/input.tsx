@@ -27,7 +27,7 @@ export class DelayedPropigationInput extends React.Component<PropertyInputProper
   }
 
   public componentWillReceiveProps(newProps: PropertyInputProperties) {
-    if (this.ref && !this.changing) {
+    if (this.ref && !this.changing && this.props.value !== newProps.value) {
       this.ref.value = newProps.value;
     }
   }
